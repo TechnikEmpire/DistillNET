@@ -1,5 +1,5 @@
 # DistillNET
-DistillNET is a library for matching and filtering HTTP requests and HTML response content using the Adblock Plus Filter format.
+DistillNET is a library for matching and filtering HTTP requests and HTML response content using the Adblock Plus Filter format. Note that while the CSS selector rule parser and object are complete, they are not implemented in anything, because an HTML parser backend is needed. This is a future goal.
 
 DistillNET was designed to be fast, considering ever other factor last. An example of this is the fact that DistillNET will create multiple inserts into its database for the same rule, if more than one domain is attached to the rule. To be clear, the rule:
 
@@ -37,4 +37,5 @@ Note that the filter matching benchmark needs to be upgraded to act more "in the
 In summary, filter matching is clocking in on my hardware at under a microsecond. The parser can chew through rules in about a microsecond, meaning 1M rules can be produced per second. The goal here is to have complex URL filtering at next to zero cost.
 
 Future Goals:
- - Migrate to Sqlite.NET to gain a cross platform and cross-device backend.
+ - Migrate to Sqlite.NET to gain a cross platform and cross-device backend.  
+ - Either change API to allow recall of CSS selector filter objects, or implement filtering with them internally.
