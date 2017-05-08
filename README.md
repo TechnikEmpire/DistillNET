@@ -34,7 +34,7 @@ Press any key to exit...
 
 Note that the filter matching benchmark needs to be upgraded to act more "in the wild", doing things such as handling random data. 
 
-In summary, filter matching is clocking in on my hardware at under a microsecond. The parser can chew through rules in about a microsecond, meaning 1M rules can be produced per second. The goal here is to have complex URL filtering at next to zero cost.
+In summary, filter matching is clocking in on my hardware at under a microsecond. The parser can chew through rules in about a microsecond each, meaning 1M rules can be produced per second. The goal here is to have complex URL filtering at next to zero cost.
 
 Future Goals:
  - Migrate to Sqlite.NET to gain a cross platform and cross-device backend.  
