@@ -5,7 +5,7 @@ DistillNET was designed to be fast, considering ever other factor last. An examp
 
  - `example.com/stuff$domain=one.com|two.com` 
 
-will create two entries in its database. One for `one.com` and another for `two.com`. This way, either domain would trigger the recreation of this rule. Disk space is wasted as a trade off to avoid complex (AKA slow) database indexing structure that would otherwise preserve space.
+will create two entries in its database. One for `one.com` and another for `two.com`. This way, either domain would trigger the re-creation of this rule. Disk space is wasted as a trade off to avoid complex (AKA slow) database indexing structure that would otherwise preserve space.
 
 Sample output of the test application (which presently only tests speed) on an `i7-6700 @ 3.4GHZ`:  
 
@@ -36,6 +36,9 @@ Note that the filter matching benchmark needs to be upgraded to act more "in the
 
 In summary, filter matching is clocking in on my hardware at under a microsecond. The parser can chew through rules in about a microsecond each, meaning 1M rules can be produced per second. The goal here is to have complex URL filtering at next to zero cost.
 
-Future Goals:
+### Why U No Serialize/Deserialize?
+As mentioned above, the parsing is extremely fast. During development I did several tests using serialization instead of continuous parsing, and found that every solution was much slower than the parser itself. Protobuf-net, ZeroFormatter, MessagePack etc all were slower, mostly much slower.
+
+### Future Goals:
  - Migrate to Sqlite.NET to gain a cross platform and cross-device backend.  
  - Either change API to allow recall of CSS selector filter objects, or implement filtering with them internally.
