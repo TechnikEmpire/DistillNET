@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 
@@ -15,7 +16,7 @@ namespace DistillNET
     internal class Program
     {
         private static void Main(string[] args)
-        {
+        {   
             var parser = new AbpFormatRuleParser();
 
             string easylistPath = AppDomain.CurrentDomain.BaseDirectory + "easylist.txt";
@@ -108,7 +109,7 @@ namespace DistillNET
             // "in-the-wild" kind of stuff.
             var rp = new AbpFormatRuleParser();
             var filter = rp.ParseAbpFormattedRule("||silly.com^stoopid^url^*1$xmlhttprequest,script,~third-party", 1) as UrlFilter;
-            var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            var headers = new NameValueCollection(StringComparer.OrdinalIgnoreCase)
             {
                 { "X-Requested-With", "XmlHttpRequest" },
                 { "Content-Type", "script" },
@@ -118,8 +119,7 @@ namespace DistillNET
 
             double d = 10000000;
             var results = new List<bool>((int)d);
-            var sw2 = new Stopwatch();
-
+            var sw2 = new Stopwatch();            
             Console.WriteLine("Roughly Benchmarking Filter Matching Speed");
             sw2.Start();
             for(int i = 0; i < d; ++i)

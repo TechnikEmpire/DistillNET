@@ -8,6 +8,7 @@
 using DistillNET.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 
 namespace DistillNET
 {
@@ -563,14 +564,14 @@ namespace DistillNET
         /// <returns>
         /// True if this filter is a positive match against the supplied URI, false otherwise.
         /// </returns>
-        public bool IsMatch(Uri uri, Dictionary<string, string> rawHeaders)
+        public bool IsMatch(Uri uri, NameValueCollection rawHeaders)
         {
             // Make sure that the headers match up with our options.
             if(this.Options != UrlFilterOptions.None)
             {
-                string headerVal = string.Empty;
+                string headerVal = null;
                 long xmlHttpRequestBits = ((OptionsLong & (long)UrlFilterOptions.ExceptXmlHttpRequest) | (OptionsLong & (long)UrlFilterOptions.XmlHttpRequest));
-                if(rawHeaders.TryGetValue("X-Requested-With", out headerVal))
+                if((headerVal = rawHeaders.Get("X-Requested-With")) != null)
                 {
                     if(headerVal.Equals("XMLHttpRequest", StringComparison.OrdinalIgnoreCase))
                     {   
@@ -589,7 +590,7 @@ namespace DistillNET
                 }
 
                 long thirdPartyBits = ((OptionsLong & (long)UrlFilterOptions.ThirdParty) | (OptionsLong & (long)UrlFilterOptions.ExceptThirdParty));
-                if(rawHeaders.TryGetValue("Referer", out headerVal))
+                if((headerVal = rawHeaders.Get("Referer")) != null)
                 {
                     if(headerVal.Equals(uri.Host, StringComparison.OrdinalIgnoreCase))
                     {
@@ -617,7 +618,7 @@ namespace DistillNET
 
                 long contentTypeBits = ((OptionsLong & (long)UrlFilterOptions.Image) | (OptionsLong & (long)UrlFilterOptions.Script) | (OptionsLong & (long)UrlFilterOptions.StyleSheet) | (OptionsLong & (long)UrlFilterOptions.ExceptImage) | (OptionsLong & (long)UrlFilterOptions.ExceptScript) | (OptionsLong & (long)UrlFilterOptions.ExceptStyleSheet));
 
-                if(rawHeaders.TryGetValue("Content-Type", out headerVal))
+                if((headerVal = rawHeaders.Get("Content-Type")) != null)
                 {
                     if(headerVal.IndexOfQuick("script") != -1)
                     {   
