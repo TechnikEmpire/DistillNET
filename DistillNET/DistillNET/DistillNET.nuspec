@@ -2,12 +2,13 @@
 <package >
   <metadata>
     <id>DistillNET</id>
-    <version>1.0.1</version>
+    <version>1.0.3</version>
     <title>DistillNET</title>
     <authors>TechnikEmpire</authors>
     <owners>TechnikEmpire</owners>
-    <licenseUrl>https://www.mozilla.org/en-US/MPL/2.0/</licenseUrl>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+	<projectUrl>https://github.com/TechnikEmpire/DistillNET</projectUrl>
+	<requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <licenseUrl>https://www.mozilla.org/en-US/MPL/2.0/</licenseUrl>    
     <description>DistillNET is a library for matching and filtering HTTP requests and HTML response content using the Adblock Plus Filter format.</description>
     <releaseNotes>Matching function(s) now use NameValueCollection.</releaseNotes>
     <copyright>Copyright 2017 Jesse Nicholson</copyright>
