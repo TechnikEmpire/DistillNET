@@ -1,6 +1,9 @@
 # DistillNET
 DistillNET is a library for matching and filtering HTTP requests and HTML response content using the Adblock Plus Filter format. Note that while the CSS selector rule parser and object are complete, they are not implemented in anything, because an HTML parser backend is needed. This is a future goal.
 
+DistillNET is available on [Nuget](https://www.nuget.org/packages/DistillNET/).
+
+
 DistillNET was designed to be fast, considering every other factor last. An example of this is the fact that DistillNET will create multiple inserts into its database for the same rule, if more than one domain is attached to the rule. To be clear, the rule:
 
  - `example.com/stuff$domain=one.com|two.com` 
