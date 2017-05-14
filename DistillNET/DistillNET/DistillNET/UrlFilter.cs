@@ -9,6 +9,8 @@ using DistillNET.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
+using System.Text;
 
 namespace DistillNET
 {
@@ -385,7 +387,7 @@ namespace DistillNET
                 get;
                 private set;
             } = string.Empty;
-
+            
             public AnchoredDomainFragment(string domain)
             {
                 Domain = domain;
@@ -393,26 +395,20 @@ namespace DistillNET
 
             public AnchoredDomainFragment()
             {
+
             }
 
             public override int IsMatch(Uri source, int lastPosition)
             {
-                if(Domain.Length > source.AbsoluteUri.Length)
+                if(Domain.Length > source.Host.Length)
                 {
                     return -1;
                 }
-
-                // Why + 3? Because the Uri.Scheme property will give us things like "http" and
-                // "https". We need to remove that AND the following "://".
-                var schemeLength = source.Scheme.Length + 3;
-                var withoutScheme = source.AbsoluteUri.Substring(schemeLength);
-
-                if(Domain.Length < withoutScheme.Length)
+                
+                if(Domain.Equals(source.Host.Substring(source.Host.Length - Domain.Length), StringComparison.OrdinalIgnoreCase))
                 {
-                    if(Domain.Equals(withoutScheme.Substring(0, Domain.Length), StringComparison.OrdinalIgnoreCase))
-                    {
-                        return schemeLength + Domain.Length;
-                    }
+                    // Why + 3? Because of "://". The scheme doesn't include this.
+                    return source.Scheme.Length + 3 + source.Host.Length;
                 }
 
                 return -1;

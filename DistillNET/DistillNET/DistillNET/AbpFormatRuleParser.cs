@@ -281,8 +281,6 @@ namespace DistillNET
                     // Get applicable and exception domains. Exception domains in the list start with tilde,
                     // applicable domains don't. Applicable here meaning that the rule should apply to such
                     // a domain.
-                    //applicableDomains = rawDomains.Where(d => !d.StartsWith("~")).ToList();
-                    //exceptionDomains = rawDomains.Where(d => d.StartsWith("~")).Select(d => d.Substring(1)).ToList();
 
                     var domainsLen = rawDomains.Length;
                     for(int i = 0; i < domainsLen; ++i)

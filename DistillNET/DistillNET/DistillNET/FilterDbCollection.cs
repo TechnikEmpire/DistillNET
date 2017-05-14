@@ -5,11 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+using DistillNET.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DistillNET
@@ -76,10 +78,7 @@ namespace DistillNET
 
             ConfigureDatabase();
 
-            if(isNew)
-            {
-                CreateTables();
-            }
+            CreateTables();
 
             m_globalKey = "global";
         }
@@ -360,6 +359,9 @@ namespace DistillNET
         {
             var retVal = new List<UrlFilter>();
 
+            var allPossibleVariations = GetAllPossibleSubdomains(domain);
+
+            using(var tsx = m_connection.BeginTransaction())
             using(var cmd = m_connection.CreateCommand())
             {
                 switch(isWhitelist)
@@ -378,17 +380,36 @@ namespace DistillNET
                 }
 
                 var domainSumParam = new SQLiteParameter("$domainId", System.Data.DbType.String);
-                domainSumParam.Value = domain;
                 cmd.Parameters.Add(domainSumParam);
 
-                using(var reader = await cmd.ExecuteReaderAsync())
+                foreach(var sub in allPossibleVariations)
                 {
-                    while(await reader.ReadAsync())
+                    cmd.Parameters[0].Value = sub;
+
+                    using(var reader = await cmd.ExecuteReaderAsync())
                     {
-                        short catId = reader.GetInt16(1);
-                        retVal.Add((UrlFilter)m_ruleParser.ParseAbpFormattedRule(reader.GetString(3), catId));
+                        while(await reader.ReadAsync())
+                        {
+                            short catId = reader.GetInt16(1);
+                            retVal.Add((UrlFilter)m_ruleParser.ParseAbpFormattedRule(reader.GetString(3), catId));
+                        }
                     }
                 }
+            }
+
+            return retVal;
+        }
+
+        private List<string> GetAllPossibleSubdomains(string inputDomain)
+        {
+            var retVal = new List<string>() { inputDomain };
+            int subPos = inputDomain.IndexOfQuick('.');
+
+            while(subPos != -1)
+            {
+                inputDomain = inputDomain.Substring(subPos + 1);
+                retVal.Add(inputDomain);
+                subPos = inputDomain.IndexOfQuick('.');
             }
 
             return retVal;
