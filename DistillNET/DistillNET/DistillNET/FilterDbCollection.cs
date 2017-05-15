@@ -395,6 +395,7 @@ namespace DistillNET
                         }
                     }
                 }
+                tsx.Commit();
             }
 
             return retVal;
