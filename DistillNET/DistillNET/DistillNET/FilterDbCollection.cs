@@ -66,14 +66,14 @@ namespace DistillNET
 
             if(useMemory)
             {
-                m_connection = new SQLiteConnection("Data Source=:memory:;Version=3;");
+                m_connection = new SQLiteConnection("FullUri=file::memory:?cache=shared;Version=3;");
             }
             else
             {
                 m_connection = new SQLiteConnection(string.Format("Data Source={0};Version=3;", dbAbsolutePath));
             }
 
-            m_connection.Flags = SQLiteConnectionFlags.NoConnectionPool | SQLiteConnectionFlags.NoConvertSettings | SQLiteConnectionFlags.NoVerifyTypeAffinity;
+            m_connection.Flags = SQLiteConnectionFlags.UseConnectionPool | SQLiteConnectionFlags.NoConvertSettings | SQLiteConnectionFlags.NoVerifyTypeAffinity;
             m_connection.Open();
 
             ConfigureDatabase();
@@ -361,41 +361,44 @@ namespace DistillNET
 
             var allPossibleVariations = GetAllPossibleSubdomains(domain);
 
-            using(var tsx = m_connection.BeginTransaction())
-            using(var cmd = m_connection.CreateCommand())
+            using(var myConn = new SQLiteConnection(m_connection))
             {
-                switch(isWhitelist)
+                using(var tsx = myConn.BeginTransaction())
+                using(var cmd = myConn.CreateCommand())
                 {
-                    case true:
+                    switch(isWhitelist)
                     {
-                        cmd.CommandText = @"SELECT * from UrlFiltersIndex where Domains = $domainId AND IsWhitelist = 1";
-                    }
-                    break;
-
-                    default:
-                    {
-                        cmd.CommandText = @"SELECT * from UrlFiltersIndex where Domains = $domainId AND IsWhitelist = 0";
-                    }
-                    break;
-                }
-
-                var domainSumParam = new SQLiteParameter("$domainId", System.Data.DbType.String);
-                cmd.Parameters.Add(domainSumParam);
-
-                foreach(var sub in allPossibleVariations)
-                {
-                    cmd.Parameters[0].Value = sub;
-
-                    using(var reader = await cmd.ExecuteReaderAsync())
-                    {
-                        while(await reader.ReadAsync())
+                        case true:
                         {
-                            short catId = reader.GetInt16(1);
-                            retVal.Add((UrlFilter)m_ruleParser.ParseAbpFormattedRule(reader.GetString(3), catId));
+                            cmd.CommandText = @"SELECT * from UrlFiltersIndex where Domains = $domainId AND IsWhitelist = 1";
+                        }
+                        break;
+
+                        default:
+                        {
+                            cmd.CommandText = @"SELECT * from UrlFiltersIndex where Domains = $domainId AND IsWhitelist = 0";
+                        }
+                        break;
+                    }
+
+                    var domainSumParam = new SQLiteParameter("$domainId", System.Data.DbType.String);
+                    cmd.Parameters.Add(domainSumParam);
+
+                    foreach(var sub in allPossibleVariations)
+                    {
+                        cmd.Parameters[0].Value = sub;
+
+                        using(var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            while(await reader.ReadAsync())
+                            {
+                                short catId = reader.GetInt16(1);
+                                retVal.Add((UrlFilter)m_ruleParser.ParseAbpFormattedRule(reader.GetString(3), catId));
+                            }
                         }
                     }
+                    tsx.Commit();
                 }
-                tsx.Commit();
             }
 
             return retVal;

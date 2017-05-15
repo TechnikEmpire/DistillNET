@@ -2,10 +2,10 @@
 <package >
   <metadata>
     <id>DistillNET</id>
-    <version>1.0.4</version>
+    <version>1.1.4</version>
     <title>DistillNET</title>
     <authors>TechnikEmpire</authors>
-	<releaseNotes>Bug fix release resolving an issue failing to commit transactions.</releaseNotes>
+	<releaseNotes>Modified in memory connection string, as well as filter lookup API, to enable threaded reads. Connections are now created on read (pooled) to comply with one transaction per connection.</releaseNotes>
     <owners>TechnikEmpire</owners>
 	<projectUrl>https://github.com/TechnikEmpire/DistillNET</projectUrl>
 	<requireLicenseAcceptance>true</requireLicenseAcceptance>
