@@ -180,6 +180,28 @@ namespace DistillNET.Extensions
             return true;
         }
 
+        public static string TrimQuick(this string str)
+        {
+            bool trimming = true;
+            while(trimming && str.Length > 0)
+            {
+                if(char.IsWhiteSpace(str[0]))
+                {
+                    str = str.Substring(1);
+                    continue;
+                }
+
+                if(char.IsWhiteSpace(str[str.Length-1]))
+                {
+                    str = str.Substring(0, str.Length-1);
+                    continue;
+                }
+
+                trimming = false;
+            }
+            return str;
+        }
+
         public static int LastIndexOfQuick(this string str, string what)
         {
             var whatLen = what.Length;

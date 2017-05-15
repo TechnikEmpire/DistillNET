@@ -217,7 +217,7 @@ namespace DistillNET
             // If it's an exception, we need to cut off three characters from the start of the CSS
             // selector rule because of the extra '@' character. If not an exception, we need to cut
             // off only the first two '##' characters.
-            rule = rule.Substring(isException ? selectorStartOffset + 3 : selectorStartOffset + 2);//.Trim();
+            rule = rule.Substring(isException ? selectorStartOffset + 3 : selectorStartOffset + 2);
 
             return new HtmlFilter(originalRuleCopy, applicableDomains, rule, isException, categoryId);
         }
@@ -232,9 +232,8 @@ namespace DistillNET
 
             // Trim off the leading "@@" chracters if it's an exception.
             if(isException)
-            {
+            {   
                 rule = rule.Substring(2);
-
                 // Adjust start offset.
                 optionsStartOffset -= 2;
             }
@@ -336,12 +335,12 @@ namespace DistillNET
                 var nextSpecial = rule.IndexOfAnchorEnd();
                 if(nextSpecial != -1)
                 {
-                    anchoredDomain = rule.Substring(0, nextSpecial);//.Trim();
-                    rule = rule.Substring(nextSpecial);//.Trim();
+                    anchoredDomain = rule.Substring(0, nextSpecial);
+                    rule = rule.Substring(nextSpecial);
                 }
                 else
                 {
-                    anchoredDomain = rule;//.Trim();
+                    anchoredDomain = rule;
                     rule = string.Empty;
                     ruleIsGreater = false;
                 }
@@ -373,15 +372,15 @@ namespace DistillNET
                                 {
                                     case -1:
                                     {
-                                        anchoredAddress = rule;//.Trim();
+                                        anchoredAddress = rule;
                                         rule = string.Empty;
                                     }
                                     break;
 
                                     default:
                                     {
-                                        anchoredAddress = rule.Substring(0, nextSpecial);//.Trim();
-                                        rule = rule.Substring(nextSpecial);//.Trim();
+                                        anchoredAddress = rule.Substring(0, nextSpecial);
+                                        rule = rule.Substring(nextSpecial);
                                     }
                                     break;
                                 }

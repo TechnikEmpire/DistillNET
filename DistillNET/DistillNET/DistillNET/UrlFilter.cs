@@ -564,7 +564,7 @@ namespace DistillNET
         {
             // Make sure that the headers match up with our options.
             if(this.Options != UrlFilterOptions.None)
-            {
+            {   
                 string headerVal = null;
                 long xmlHttpRequestBits = ((OptionsLong & (long)UrlFilterOptions.ExceptXmlHttpRequest) | (OptionsLong & (long)UrlFilterOptions.XmlHttpRequest));
                 if((headerVal = rawHeaders.Get("X-Requested-With")) != null)
@@ -650,10 +650,10 @@ namespace DistillNET
                     return false;
                 }
             }
-
+            
             int matchIndex = 0;
             foreach(var part in Parts)
-            {
+            {   
                 matchIndex = part.IsMatch(uri, matchIndex);
 
                 if(matchIndex == -1)

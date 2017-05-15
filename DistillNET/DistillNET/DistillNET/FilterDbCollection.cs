@@ -106,7 +106,7 @@ namespace DistillNET
                 cmd.CommandText = "PRAGMA journal_mode=OFF;";
                 await cmd.ExecuteNonQueryAsync();
 
-                cmd.CommandText = "PRAGMA locking_mode=EXCLUSIVE;";
+                cmd.CommandText = "PRAGMA locking_mode=NORMAL;";
                 await cmd.ExecuteNonQueryAsync();
 
                 cmd.CommandText = "PRAGMA temp_store=2;";
@@ -122,6 +122,9 @@ namespace DistillNET
                 await cmd.ExecuteNonQueryAsync();
 
                 cmd.CommandText = "PRAGMA automatic_index=FALSE;";
+                await cmd.ExecuteNonQueryAsync();
+
+                cmd.CommandText = "PRAGMA busy_timeout=20000;";
                 await cmd.ExecuteNonQueryAsync();
             }
         }
@@ -197,9 +200,10 @@ namespace DistillNET
                     cmd.Parameters.Add(isWhitelistParam);
                     cmd.Parameters.Add(sourceParam);
 
-                    var len = rawRuleStrings.Length;
+                    var len = rawRuleStrings.Length;                    
                     for(int i = 0; i < len; ++i)
                     {
+                        rawRuleStrings[i] = rawRuleStrings[i].TrimQuick();
                         var filter = m_ruleParser.ParseAbpFormattedRule(rawRuleStrings[i], categoryId) as UrlFilter;
 
                         if(filter == null)
@@ -275,6 +279,7 @@ namespace DistillNET
                     using(var sw = new StreamReader(rawRulesStream))
                     while((line = await sw.ReadLineAsync()) != null)
                     {
+                        line = line.TrimQuick();
                         var filter = m_ruleParser.ParseAbpFormattedRule(line, categoryId) as UrlFilter;
 
                         if(filter == null)
@@ -381,8 +386,8 @@ namespace DistillNET
                         break;
                     }
 
-                    var domainSumParam = new SQLiteParameter("$domainId", System.Data.DbType.String);
-                    cmd.Parameters.Add(domainSumParam);
+                    var domainParam = new SQLiteParameter("$domainId", System.Data.DbType.String);
+                    cmd.Parameters.Add(domainParam);
 
                     foreach(var sub in allPossibleVariations)
                     {
