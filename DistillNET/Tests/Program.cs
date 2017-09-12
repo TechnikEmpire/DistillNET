@@ -15,8 +15,51 @@ namespace DistillNET
 {
     internal class Program
     {
-        private static void Main(string[] args)
+        private static void TestDomainWideException()
         {   
+
+            FilterDbCollection col = new FilterDbCollection("", true, true);
+
+            //"@@$third-party,referer=~pinterest.com"
+
+            col.ParseStoreRules(new[] { "@@$referer=pinterest.com" }, 1).Wait();
+            col.FinalizeForRead();
+         
+            var headersShouldMatch = new NameValueCollection(StringComparer.OrdinalIgnoreCase)
+            {
+                { "X-Requested-With", "XmlHttpRequest" },
+                { "Content-Type", "script" },
+                { "Referer", "pinterest.com" },
+            };
+
+            var headersShouldnt = new NameValueCollection(StringComparer.OrdinalIgnoreCase)
+            {
+                { "X-Requested-With", "XmlHttpRequest" },
+                { "Content-Type", "script" },
+                { "Referer", "pinterestz.com" },
+            };
+
+            var uri = new Uri("http://silly.com/stoopid/url&=b1");
+
+            var allRules = col.GetWhitelistFiltersForDomain().Result;
+
+            foreach(var wlr in allRules)
+            {
+                Console.WriteLine("Inc R: {0}", string.Join(", ", wlr.ApplicableReferers));
+                Console.WriteLine("Exc R: {0}", string.Join(", ", wlr.ExceptReferers));
+
+                Console.WriteLine(wlr.IsMatch(uri, headersShouldMatch));
+                Console.WriteLine(wlr.IsMatch(uri, headersShouldnt));
+            }
+
+            Console.ReadKey();
+        }
+
+        private static void Main(string[] args)
+        {
+            TestDomainWideException();
+            return;
+
             var parser = new AbpFormatRuleParser();
 
             string easylistPath = AppDomain.CurrentDomain.BaseDirectory + "easylist.txt";

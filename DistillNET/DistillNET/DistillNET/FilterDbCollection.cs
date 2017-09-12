@@ -23,7 +23,7 @@ namespace DistillNET
     /// rather than serialized/deserialized, because the parser is much faster than such utilities
     /// such as protobuf.
     /// </summary>
-    public class FilterDbCollection
+    public class FilterDbCollection : IDisposable
     {
         /// <summary>
         /// Our rule parser.
@@ -217,7 +217,7 @@ namespace DistillNET
                         if(filter.ApplicableDomains.Count > 0)
                         {
                             foreach(var dmn in filter.ApplicableDomains)
-                            {
+                            {   
                                 cmd.Parameters[0].Value = dmn;
                                 cmd.Parameters[1].Value = categoryId;
                                 cmd.Parameters[2].Value = filter.IsException;
@@ -428,5 +428,44 @@ namespace DistillNET
         {
             return null;
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if(!disposedValue)
+            {
+                if(disposing)
+                {
+                    if(m_connection != null)
+                    {
+                        m_connection.Close();
+                        m_connection = null;
+                    }
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~FilterDbCollection() {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

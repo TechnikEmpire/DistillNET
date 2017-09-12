@@ -227,8 +227,11 @@ namespace DistillNET
             string originalRuleCopy = rule;
 
             string[] allOptions = null;
-            List<string> applicableDomains = new List<string>();
-            List<string> exceptionDomains = new List<string>();
+            HashSet<string> applicableReferers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> exceptReferers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            HashSet<string> applicableDomains = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> exceptionDomains = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             // Trim off the leading "@@" chracters if it's an exception.
             if(isException)
@@ -250,16 +253,24 @@ namespace DistillNET
             var enumOptions = UrlFilter.UrlFilterOptions.None;
 
             if(allOptions != null)
-            {
-                string domainsOption = null;//allOptions.Where(r => r.IndexOf('=') != -1).FirstOrDefault();
+            {   
+                string domainsOption = null;
+
+                string refererOption = null;
+
                 var allOptLen = allOptions.Length;
                 for(int i = 0; i < allOptLen; ++i)
                 {
-                    if(allOptions[i].Length > 7 && allOptions[i][6] == '=')
+                    if(allOptions[i].Length > 7 && allOptions[i][0] == 'd' && allOptions[i][7] == '=')
                     {
                         domainsOption = allOptions[i];
                         allOptions[i] = string.Empty;
-                        break;
+                    }
+
+                    if(allOptions[i].Length > 7 && allOptions[i][0] == 'r' && allOptions[i][7] == '=')
+                    {
+                        refererOption = allOptions[i];
+                        allOptions[i] = string.Empty;
                     }
                 }
 
@@ -268,13 +279,11 @@ namespace DistillNET
                     // If we got a domains option, split it out of the main options collection, as
                     // this is the only type of option that's special aka has to parsed differently.
                     // Differentiate simply by string length for speed, but do ordinal compare when
-                    // lengths are equal. allOptions = allOptions.Where(r => (r.Length !=
-                    // domainsOption.Length || !r.Equals(domainsOption,
-                    // StringComparison.OrdinalIgnoreCase))).ToArray();
+                    // lengths are equal. 
 
                     // Trim off the "domains=" part, then split by the domains delimiter, which is a
                     // pipe.
-                    domainsOption = domainsOption.Substring(7);
+                    domainsOption = domainsOption.Substring(8);
                     var rawDomains = domainsOption.Split(s_domainsDelim, StringSplitOptions.None);
 
                     // Get applicable and exception domains. Exception domains in the list start with tilde,
@@ -295,6 +304,42 @@ namespace DistillNET
                             default:
                             {
                                 applicableDomains.Add(rawDomains[i]);
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                if(refererOption != null)
+                {   
+                    // If we got a referers option, split it out of the main options collection, as
+                    // this is the only type of option that's special aka has to parsed differently.
+                    // Differentiate simply by string length for speed, but do ordinal compare when
+                    // lengths are equal. 
+
+                    // Trim off the "referer=" part, then split by the domains delimiter, which is a
+                    // pipe.
+                    refererOption = refererOption.Substring(8);
+                    var rawReferers = refererOption.Split(s_domainsDelim, StringSplitOptions.None);
+
+                    // Get applicable and exception referers. Exception referers in the list start with tilde,
+                    // applicable referers don't. Applicable here meaning that the rule should apply to such
+                    // a domain.
+
+                    var referersLen = rawReferers.Length;
+                    for(int i = 0; i < referersLen; ++i)
+                    {
+                        switch(rawReferers[i][0])
+                        {
+                            case '~':
+                            {
+                                exceptReferers.Add(rawReferers[i].Substring(1));
+                            }
+                            break;
+
+                            default:
+                            {
+                                applicableReferers.Add(rawReferers[i]);
                             }
                             break;
                         }
@@ -452,7 +497,7 @@ namespace DistillNET
                 compiledParts.Add(new UrlFilter.StringLiteralFragment(rule.Substring(lastCol), enumOptions.HasFlag(UrlFilter.UrlFilterOptions.MatchCase)));
             }
 
-            return new UrlFilter(originalRuleCopy, compiledParts, enumOptions, applicableDomains, exceptionDomains, isException, categoryId);
+            return new UrlFilter(originalRuleCopy, compiledParts, enumOptions, applicableDomains, exceptionDomains, applicableReferers, exceptReferers, isException, categoryId);
         }
     }
 }

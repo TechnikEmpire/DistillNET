@@ -460,21 +460,41 @@ namespace DistillNET
         }
 
         /// <summary>
-        /// Gets an array of all domains that this URL filter rule applies to. In the event that this
-        /// array is empty, the rule applies globally, to all domains.
+        /// Gets a hashset of all referers that this URL filter rule applies to. In the event that
+        /// this array is empty, the referer field on requests will not be checked.
         /// </summary>
-        public List<string> ApplicableDomains
+        public HashSet<string> ApplicableReferers
         {
             get;
             private set;
         }
 
         /// <summary>
-        /// Gets an array of all domains that this URL filter should not be applied to. In the event
+        /// Gets a hashset of all referers that this URL filter rule applies to. In the event that
+        /// this array is empty, the referer field on requests will not be checked.
+        /// </summary>
+        public HashSet<string> ExceptReferers
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets a hashset of all domains that this URL filter rule applies to. In the event that this
+        /// array is empty, the rule applies globally, to all domains.
+        /// </summary>
+        public HashSet<string> ApplicableDomains
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets a hashset of all domains that this URL filter should not be applied to. In the event
         /// that this array is empty, the rule applies either globally, or exclusively to the list of
         /// applicable domains, if that property is not empty.
         /// </summary>
-        public List<string> ExceptionDomains
+        public HashSet<string> ExceptionDomains
         {
             get;
             private set;
@@ -538,13 +558,16 @@ namespace DistillNET
         /// <param name="categoryId">
         /// The category ID of the category this filter belongs to.
         /// </param>
-        internal UrlFilter(string originalRule, List<UrlFilteringRuleFragment> parts, UrlFilterOptions options, List<string> applicableDomains, List<string> exceptionDomains, bool isException, short categoryId) : base(originalRule, isException, categoryId)
+        internal UrlFilter(string originalRule, List<UrlFilteringRuleFragment> parts, UrlFilterOptions options, HashSet<string> applicableDomains, HashSet<string> exceptionDomains, HashSet<string> applicableReferers, HashSet<string> exceptionReferers, bool isException, short categoryId) : base(originalRule, isException, categoryId)
         {
             Parts = parts;
             Options = options;
 
             ApplicableDomains = applicableDomains;
             ExceptionDomains = exceptionDomains;
+
+            ApplicableReferers = applicableReferers;
+            ExceptReferers = exceptionReferers;
         }
 
         /// <summary>
@@ -564,23 +587,23 @@ namespace DistillNET
         {
             // Make sure that the headers match up with our options.
             if(this.Options != UrlFilterOptions.None)
-            {   
+            {
                 string headerVal = null;
                 long xmlHttpRequestBits = ((OptionsLong & (long)UrlFilterOptions.ExceptXmlHttpRequest) | (OptionsLong & (long)UrlFilterOptions.XmlHttpRequest));
                 if((headerVal = rawHeaders.Get("X-Requested-With")) != null)
                 {
                     if(headerVal.Equals("XMLHttpRequest", StringComparison.OrdinalIgnoreCase))
-                    {   
+                    {
                         xmlHttpRequestBits &= ~(long)UrlFilterOptions.XmlHttpRequest;
                     }
                     else
-                    {   
+                    {
                         xmlHttpRequestBits &= ~(long)UrlFilterOptions.ExceptXmlHttpRequest;
                     }
                 }
 
                 if(xmlHttpRequestBits != 0)
-                {   
+                {
                     // XML HttpRequest bits were not cleared, meaning that one of those options was not satisifed.
                     return false;
                 }
@@ -595,6 +618,21 @@ namespace DistillNET
                     else
                     {
                         thirdPartyBits &= ~(long)UrlFilterOptions.ThirdParty;
+                    }
+
+                    // While we have the referer field, let's go ahead and check if we have referer
+                    // options and if we do or don't have a match.
+                    //
+                    // This is a shortcut. We unfortunately need to also execute this code also when
+                    // there are no options.
+                    if(ApplicableReferers.Count > 0 && !ApplicableReferers.Contains(headerVal))
+                    {
+                        return false;
+                    }
+
+                    if(ExceptReferers.Count > 0 && ExceptReferers.Contains(headerVal))
+                    {
+                        return false;
                     }
                 }
                 else
@@ -617,7 +655,7 @@ namespace DistillNET
                 if((headerVal = rawHeaders.Get("Content-Type")) != null)
                 {
                     if(headerVal.IndexOfQuick("script") != -1)
-                    {   
+                    {
                         contentTypeBits &= ~(long)UrlFilterOptions.Script;
                     }
                     else
@@ -650,7 +688,31 @@ namespace DistillNET
                     return false;
                 }
             }
-            
+            else
+            {
+                if(ApplicableReferers.Count > 0 || ExceptReferers.Count > 0)
+                {
+                    string headerVal = null;
+                    if((headerVal = rawHeaders.Get("Referer")) != null)
+                    {
+                        // While we have the referer field, let's go ahead and check if we have referer
+                        // options and if we do or don't have a match.
+                        //
+                        // This is a shortcut. We unfortunately need to also execute this code also when
+                        // there are no options.
+                        if(ApplicableReferers.Count > 0 && !ApplicableReferers.Contains(headerVal))
+                        {
+                            return false;
+                        }
+
+                        if(ExceptReferers.Count > 0 && ExceptReferers.Contains(headerVal))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
             int matchIndex = 0;
             foreach(var part in Parts)
             {   

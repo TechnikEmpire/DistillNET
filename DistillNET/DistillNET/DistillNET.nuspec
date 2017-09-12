@@ -2,10 +2,10 @@
 <package >
   <metadata>
     <id>DistillNET</id>
-    <version>1.1.4</version>
+    <version>1.3.1</version>
     <title>DistillNET</title>
     <authors>TechnikEmpire</authors>
-	<releaseNotes>Modified in memory connection string, as well as filter lookup API, to enable threaded reads. Connections are now created on read (pooled) to comply with one transaction per connection.</releaseNotes>
+	<releaseNotes>Fixed an error in the parsing of the domains option. Added a new referer option.</releaseNotes>
     <owners>TechnikEmpire</owners>
 	<projectUrl>https://github.com/TechnikEmpire/DistillNET</projectUrl>
 	<requireLicenseAcceptance>true</requireLicenseAcceptance>
