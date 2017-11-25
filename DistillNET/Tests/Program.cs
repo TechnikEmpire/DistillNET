@@ -16,9 +16,8 @@ namespace DistillNET
     internal class Program
     {
         private static void TestDomainWideException()
-        {   
-
-            FilterDbCollection col = new FilterDbCollection("", true, true);
+        {
+            FilterDbCollection col = new FilterDbCollection();
 
             //"@@$third-party,referer=~pinterest.com"
 
@@ -29,14 +28,14 @@ namespace DistillNET
             {
                 { "X-Requested-With", "XmlHttpRequest" },
                 { "Content-Type", "script" },
-                { "Referer", "pinterest.com" },
+                { "Referer", "https://www.pinterest.com" },
             };
 
             var headersShouldnt = new NameValueCollection(StringComparer.OrdinalIgnoreCase)
             {
                 { "X-Requested-With", "XmlHttpRequest" },
                 { "Content-Type", "script" },
-                { "Referer", "pinterestz.com" },
+                { "Referer", "https://www.silsly.com" },
             };
 
             var uri = new Uri("http://silly.com/stoopid/url&=b1");
@@ -57,9 +56,6 @@ namespace DistillNET
 
         private static void Main(string[] args)
         {
-            TestDomainWideException();
-            return;
-
             var parser = new AbpFormatRuleParser();
 
             string easylistPath = AppDomain.CurrentDomain.BaseDirectory + "easylist.txt";
@@ -108,8 +104,9 @@ namespace DistillNET
             Console.WriteLine();
             Console.WriteLine("Testing Parse And Store To DB Speed");
 
-            var dbOutPath = AppDomain.CurrentDomain.BaseDirectory + "Test.db";
-            var filterCollection = new FilterDbCollection(dbOutPath);
+            //var dbOutPath = AppDomain.CurrentDomain.BaseDirectory + "Test.db";
+            //var filterCollection = new FilterDbCollection(dbOutPath);
+            var filterCollection = new FilterDbCollection();
 
             var adultFileStream = File.OpenRead(adultDomainsPath);
             var easylistFileStream = File.OpenRead(easylistPath);
@@ -125,13 +122,12 @@ namespace DistillNET
             Console.WriteLine("Parsed And Stored {0} filters in {1} msec, averaging {2} msec per filter.", adultResult.Item1 + easyListResult.Item1, sw.ElapsedMilliseconds, sw.ElapsedMilliseconds / (double)(adultResult.Item1 + easyListResult.Item1));
             
             Console.WriteLine();
-            Console.WriteLine("Testing Rule Lookup By Domain From DB");
-            string globalRuleKey = "global";
+            Console.WriteLine("Testing Rule Lookup By Domain From DB");            
             int loadedFilters = 0;
             sw.Restart();
             for(int i = 0; i < 1000; ++i)
             {
-                loadedFilters += filterCollection.GetFiltersForDomain(globalRuleKey).Result.Count;
+                loadedFilters += filterCollection.GetFiltersForDomain().Result.Count;
             }
             sw.Stop();
 

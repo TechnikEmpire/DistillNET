@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#define USE_REFERER
+
 using DistillNET.Extensions;
 using System;
 using System.Collections.Generic;
@@ -21,7 +23,7 @@ namespace DistillNET
         private static char[] s_optionsDelim = new[] { ',' };
 
         /// <summary>
-        /// Delimiters used for splitting domains specified inthe URL filtering options "domains".
+        /// Delimiters used for splitting domains specified in the URL filtering options "domains".
         /// </summary>
         private static char[] s_domainsDelim = new[] { '|' };
 
@@ -227,11 +229,11 @@ namespace DistillNET
             string originalRuleCopy = rule;
 
             string[] allOptions = null;
-            HashSet<string> applicableReferers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            HashSet<string> exceptReferers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            List<string> applicableReferers = new List<string>();
+            List<string> exceptReferers = new List<string>();
 
-            HashSet<string> applicableDomains = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            HashSet<string> exceptionDomains = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            List<string> applicableDomains = new List<string>();
+            List<string> exceptionDomains = new List<string>();
 
             // Trim off the leading "@@" chracters if it's an exception.
             if(isException)
@@ -261,17 +263,37 @@ namespace DistillNET
                 var allOptLen = allOptions.Length;
                 for(int i = 0; i < allOptLen; ++i)
                 {
-                    if(allOptions[i].Length > 7 && allOptions[i][0] == 'd' && allOptions[i][7] == '=')
+                    if(allOptions[i].Length > 7 && allOptions[i][0] == 'd' && allOptions[i][6] == '=')
                     {
                         domainsOption = allOptions[i];
                         allOptions[i] = string.Empty;
+
+                        if(refererOption != null)
+                        {
+                            // No sense in scanning further when everything we could possibly need
+                            // has been captured out of this loop.
+                            break;
+                        }
+
+                        continue;
                     }
 
+#if USE_REFERER
                     if(allOptions[i].Length > 7 && allOptions[i][0] == 'r' && allOptions[i][7] == '=')
                     {
                         refererOption = allOptions[i];
                         allOptions[i] = string.Empty;
+
+                        if(domainsOption != null)
+                        {
+                            // No sense in scanning further when everything we could possibly need
+                            // has been captured out of this loop.
+                            break;
+                        }
+
+                        continue;
                     }
+#endif
                 }
 
                 if(domainsOption != null)
@@ -283,7 +305,7 @@ namespace DistillNET
 
                     // Trim off the "domains=" part, then split by the domains delimiter, which is a
                     // pipe.
-                    domainsOption = domainsOption.Substring(8);
+                    domainsOption = domainsOption.Substring(7);
                     var rawDomains = domainsOption.Split(s_domainsDelim, StringSplitOptions.None);
 
                     // Get applicable and exception domains. Exception domains in the list start with tilde,
@@ -310,6 +332,7 @@ namespace DistillNET
                     }
                 }
 
+#if USE_REFERER
                 if(refererOption != null)
                 {   
                     // If we got a referers option, split it out of the main options collection, as
@@ -345,6 +368,7 @@ namespace DistillNET
                         }
                     }
                 }
+#endif
 
                 // Parse out the rest of the options.
                 UrlFilter.UrlFilterOptions asOpt;

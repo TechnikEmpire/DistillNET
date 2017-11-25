@@ -6,12 +6,13 @@
  */
 
 using DistillNET.Extensions;
+using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace DistillNET
@@ -33,12 +34,42 @@ namespace DistillNET
         /// <summary>
         /// Our Sqlite connection.
         /// </summary>
-        private SQLiteConnection m_connection;
+        private SqliteConnection m_connection;
 
         /// <summary>
         /// The global key used to index non-domain specific filters.
         /// </summary>
         private readonly string m_globalKey;
+
+        /// <summary>
+        /// Constructs a new FilterDbCollection using an in-memory database.
+        /// </summary>
+        public FilterDbCollection()
+        {
+            
+            var version = typeof(FilterDbCollection).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
+            var rnd = new Random();
+            var rndNum = rnd.Next();
+            var generatedDbName = string.Format("{0} {1} - {2}", nameof(FilterDbCollection), version, rndNum);
+
+            // "Data Source = :memory:; Cache = shared;"
+            var cb = new SqliteConnectionStringBuilder();
+            cb.DataSource = generatedDbName;
+            cb.Mode = SqliteOpenMode.Memory;
+            cb.Cache = SqliteCacheMode.Shared;            
+            m_connection = new SqliteConnection(cb.ToString());
+
+            //m_connection. = SQLiteConnectionFlags.UseConnectionPool | SQLiteConnectionFlags.NoConvertSettings | SQLiteConnectionFlags.NoVerifyTypeAffinity;            
+            m_connection.Open();
+
+            ConfigureDatabase();
+
+            CreateTables();
+
+            m_globalKey = "global";
+
+            m_ruleParser = new AbpFormatRuleParser();
+        }
 
         /// <summary>
         /// Constructs a new FilterDbCollection.
@@ -66,14 +97,24 @@ namespace DistillNET
 
             if(useMemory)
             {
-                m_connection = new SQLiteConnection("FullUri=file::memory:?cache=shared;Version=3;");
+                // "Data Source = :memory:; Cache = shared;"
+                var cb = new SqliteConnectionStringBuilder();
+                cb.Mode = SqliteOpenMode.Memory;
+                cb.Cache = SqliteCacheMode.Shared;
+                Console.WriteLine(cb.ToString());
+                m_connection = new SqliteConnection(cb.ToString());
             }
             else
             {
-                m_connection = new SQLiteConnection(string.Format("Data Source={0};Version=3;", dbAbsolutePath));
+                // "Data Source={0};"
+                var cb = new SqliteConnectionStringBuilder();
+                cb.Mode = SqliteOpenMode.ReadWriteCreate;
+                cb.Cache = SqliteCacheMode.Shared;
+                cb.DataSource = dbAbsolutePath;
+                m_connection = new SqliteConnection(cb.ToString());                
             }
 
-            m_connection.Flags = SQLiteConnectionFlags.UseConnectionPool | SQLiteConnectionFlags.NoConvertSettings | SQLiteConnectionFlags.NoVerifyTypeAffinity;
+            //m_connection. = SQLiteConnectionFlags.UseConnectionPool | SQLiteConnectionFlags.NoConvertSettings | SQLiteConnectionFlags.NoVerifyTypeAffinity;            
             m_connection.Open();
 
             ConfigureDatabase();
@@ -191,10 +232,10 @@ namespace DistillNET
                 using(var cmd = m_connection.CreateCommand())
                 {
                     cmd.CommandText = "INSERT INTO UrlFiltersIndex VALUES ($domain, $categoryId, $isWhitelist, $source)";
-                    var domainParam = new SQLiteParameter("$domain", DbType.String);
-                    var categoryIdParam = new SQLiteParameter("$categoryId", DbType.Int16);
-                    var isWhitelistParam = new SQLiteParameter("$isWhitelist", DbType.Boolean);
-                    var sourceParam = new SQLiteParameter("$source", DbType.String);
+                    var domainParam = new SqliteParameter("$domain", DbType.String);
+                    var categoryIdParam = new SqliteParameter("$categoryId", DbType.Int16);
+                    var isWhitelistParam = new SqliteParameter("$isWhitelist", DbType.Boolean);
+                    var sourceParam = new SqliteParameter("$source", DbType.String);
                     cmd.Parameters.Add(domainParam);
                     cmd.Parameters.Add(categoryIdParam);
                     cmd.Parameters.Add(isWhitelistParam);
@@ -266,10 +307,10 @@ namespace DistillNET
                 using(var cmd = m_connection.CreateCommand())
                 {
                     cmd.CommandText = "INSERT INTO UrlFiltersIndex VALUES ($domain, $categoryId, $isWhitelist, $source)";
-                    var domainParam = new SQLiteParameter("$domain", DbType.String);
-                    var categoryIdParam = new SQLiteParameter("$categoryId", DbType.Int16);
-                    var isWhitelistParam = new SQLiteParameter("$isWhitelist", DbType.Boolean);
-                    var sourceParam = new SQLiteParameter("$source", DbType.String);
+                    var domainParam = new SqliteParameter("$domain", DbType.String);
+                    var categoryIdParam = new SqliteParameter("$categoryId", DbType.Int16);
+                    var isWhitelistParam = new SqliteParameter("$isWhitelist", DbType.Boolean);
+                    var sourceParam = new SqliteParameter("$source", DbType.String);
                     cmd.Parameters.Add(domainParam);
                     cmd.Parameters.Add(categoryIdParam);
                     cmd.Parameters.Add(isWhitelistParam);
@@ -365,9 +406,11 @@ namespace DistillNET
             var retVal = new List<UrlFilter>();
 
             var allPossibleVariations = GetAllPossibleSubdomains(domain);
-
-            using(var myConn = new SQLiteConnection(m_connection))
+            
+            using(var myConn = new SqliteConnection(m_connection.ConnectionString))
             {
+                await myConn.OpenAsync();
+
                 using(var tsx = myConn.BeginTransaction())
                 using(var cmd = myConn.CreateCommand())
                 {
@@ -386,7 +429,7 @@ namespace DistillNET
                         break;
                     }
 
-                    var domainParam = new SQLiteParameter("$domainId", System.Data.DbType.String);
+                    var domainParam = new SqliteParameter("$domainId", System.Data.DbType.String);
                     cmd.Parameters.Add(domainParam);
 
                     foreach(var sub in allPossibleVariations)
