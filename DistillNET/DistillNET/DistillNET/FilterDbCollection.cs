@@ -97,11 +97,16 @@ namespace DistillNET
 
             if(useMemory)
             {
+                var version = typeof(FilterDbCollection).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
+                var rnd = new Random();
+                var rndNum = rnd.Next();
+                var generatedDbName = string.Format("{0} {1} - {2}", nameof(FilterDbCollection), version, rndNum);
+
                 // "Data Source = :memory:; Cache = shared;"
                 var cb = new SqliteConnectionStringBuilder();
                 cb.Mode = SqliteOpenMode.Memory;
                 cb.Cache = SqliteCacheMode.Shared;
-                Console.WriteLine(cb.ToString());
+                cb.DataSource = generatedDbName;
                 m_connection = new SqliteConnection(cb.ToString());
             }
             else

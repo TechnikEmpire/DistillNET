@@ -106,7 +106,7 @@ namespace DistillNET
 
             //var dbOutPath = AppDomain.CurrentDomain.BaseDirectory + "Test.db";
             //var filterCollection = new FilterDbCollection(dbOutPath);
-            var filterCollection = new FilterDbCollection();
+            var filterCollection = new FilterDbCollection(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rules.db"), true, true);
 
             var adultFileStream = File.OpenRead(adultDomainsPath);
             var easylistFileStream = File.OpenRead(easylistPath);
