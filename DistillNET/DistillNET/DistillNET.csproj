@@ -7,7 +7,7 @@
     <PackageLicenseUrl>https://www.mozilla.org/en-US/MPL/2.0/</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/TechnikEmpire/DistillNET</PackageProjectUrl>
     <RepositoryUrl>https://github.com/TechnikEmpire/DistillNET</RepositoryUrl>
-    <Description>DistillNET is a library for matching and filtering HTTP requests and HTML response content using the Adblock Plus Filter format.</Description>
+    <Description>DistillNET is a library for matching and filtering HTTP requests URLs using the Adblock Plus Filter format.</Description>
     <Copyright>Copyright © 2017 Jesse Nicholson</Copyright>
     <Version>1.4.5</Version>
     <Authors>Jesse Nicholson</Authors>
