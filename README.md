@@ -10,30 +10,37 @@ DistillNET was designed to be fast, considering every other factor last. An exam
 
 will create two entries in its database. One for `one.com` and another for `two.com`. This way, either domain would trigger the re-creation of this rule. Disk space is wasted as a trade off to avoid a complex (AKA slow) database indexing structure that would otherwise preserve space.
 
-Sample output of the test application (which presently only tests speed) on an `i7-6700 @ 3.4GHZ`:  
+As of version 1.4.6, DistillNET uses an internal memory cache for database lookups that is configurable at construction time with an optional argument. The default value will cache looksups for 10 minutes. This has improved lookup performance several hundred fold. See benchmark output below.
+
+Benchmark output on an `i7-6700 @ 3.4GHZ`:  
 
 ```bash
-
 Testing Parser Speed
 About To Parse 61081 Filters From Easylist
-Parsed 61081 Easylist filters in 105 msec, averaging 0.00171902883056924 msec per filter.
+Parsed 61081 Easylist filters in 108 msec, averaging 0.00176814394001408 msec per filter.
 
 Testing Parser Speed
 About To Parse 1454513 Filters From Adult Domains
-Parsed 1454513 Adult Domains filters in 1590 msec, averaging 0.00109314939089578 msec per filter.
+Parsed 1454513 Adult Domains filters in 2102 msec, averaging 0.00144515724507103 msec per filter.
 
 Testing Parse And Store To DB Speed
-Parsed And Stored 1484236 filters in 8349 msec, averaging 0.00562511622140953 msec per filter.
+Parsed And Stored 1484236 filters in 11400 msec, averaging 0.00768071923871945 msec per filter.
 
+Testing Rule Lookup By Domain From DB
+Looked up and reconstructed 7778000 filters from DB in 28 msec, averaging 0.028 msec per lookup and 3.59989714579583E-06 msec per filter lookup and reconstruction.
+
+Roughly Benchmarking Filter Matching Speed
+Filter matching loosely benchmarked at 0.7133 microseconds per check.
+Press any key to exit...
+```
+#### Before Version 1.4.6
+```bash
 Testing Rule Lookup By Domain From DB
 Looked up and reconstructed 7778000 filters from DB in 9801 msec, averaging 9.801 msec per lookup and 
 0.00126009256878375 msec per filter lookup and reconstruction.
-
-Roughly Benchmarking Filter Matching Speed
-Filter matching loosely benchmarked at 0.7029 microseconds per check.
-Press any key to exit...
-
 ```
+
+The addition of configurable memory caching in 1.4.6 has improved lookup performance by ~426x.
 
 Note that the filter matching benchmark needs to be upgraded to act more "in the wild", doing things such as handling random data. 
 
