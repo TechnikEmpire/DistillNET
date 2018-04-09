@@ -50,5 +50,4 @@ In summary, filter matching is clocking in on my hardware at under a microsecond
 As mentioned above, the parsing is extremely fast. During development I did several tests using serialization instead of continuous parsing, and found that every solution was much slower than the parser itself. Protobuf-net, ZeroFormatter, MessagePack etc all were slower, mostly much slower.
 
 ### Future Goals:
- - Migrate to Sqlite.NET to gain a cross platform and cross-device backend.  
  - Either change API to allow recall of CSS selector filter objects, or implement filtering with them internally.
