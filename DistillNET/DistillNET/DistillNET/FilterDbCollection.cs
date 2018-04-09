@@ -7,12 +7,15 @@
 
 using DistillNET.Extensions;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DistillNET
@@ -42,33 +45,23 @@ namespace DistillNET
         private readonly string m_globalKey;
 
         /// <summary>
+        /// Memory cache.
+        /// </summary>
+        private MemoryCache m_cache;
+
+        /// <summary>
+        /// Mem cache options.
+        /// </summary>
+        private MemoryCacheOptions m_cacheOptions;
+
+        /// <summary>
         /// Constructs a new FilterDbCollection using an in-memory database.
         /// </summary>
-        public FilterDbCollection()
-        {
-            
-            var version = typeof(FilterDbCollection).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
-            var rnd = new Random();
-            var rndNum = rnd.Next();
-            var generatedDbName = string.Format("{0} {1} - {2}", nameof(FilterDbCollection), version, rndNum);
-
-            // "Data Source = :memory:; Cache = shared;"
-            var cb = new SqliteConnectionStringBuilder();
-            cb.DataSource = generatedDbName;
-            cb.Mode = SqliteOpenMode.Memory;
-            cb.Cache = SqliteCacheMode.Shared;            
-            m_connection = new SqliteConnection(cb.ToString());
-
-            //m_connection. = SQLiteConnectionFlags.UseConnectionPool | SQLiteConnectionFlags.NoConvertSettings | SQLiteConnectionFlags.NoVerifyTypeAffinity;            
-            m_connection.Open();
-
-            ConfigureDatabase();
-
-            CreateTables();
-
-            m_globalKey = "global";
-
-            m_ruleParser = new AbpFormatRuleParser();
+        /// <param name="cacheOptions">
+        /// User defined query caching options.
+        /// </param>
+        public FilterDbCollection(MemoryCacheOptions cacheOptions = null) : this(null, true, true, cacheOptions)
+        {   
         }
 
         /// <summary>
@@ -84,12 +77,23 @@ namespace DistillNET
         /// <param name="useMemory">
         /// If true, the database will be created as a purely in-memory database.
         /// </param>
-        public FilterDbCollection(string dbAbsolutePath, bool overwrite = true, bool useMemory = false)
+        /// <param name="cacheOptions">
+        /// User defined query caching options.
+        /// </param>
+        public FilterDbCollection(string dbAbsolutePath, bool overwrite = true, bool useMemory = false, MemoryCacheOptions cacheOptions = null)
         {
             if(!useMemory && overwrite && File.Exists(dbAbsolutePath))
             {
                 File.Delete(dbAbsolutePath);
             }
+
+            if(cacheOptions == null)
+            {
+                cacheOptions = new MemoryCacheOptions();                
+                cacheOptions.ExpirationScanFrequency = TimeSpan.FromMinutes(10);
+            }
+
+            m_cacheOptions = cacheOptions;
 
             bool isNew = !File.Exists(dbAbsolutePath);
 
@@ -213,6 +217,16 @@ namespace DistillNET
             CreatedIndexes();
         }
 
+        private void RecreateCache()
+        {
+            if (m_cache != null)
+            {   
+                m_cache.Dispose();
+            }
+
+            m_cache = new MemoryCache(m_cacheOptions);
+        }
+
         /// <summary>
         /// Parses the supplied list of rules and stores them in the assigned database for retrieval,
         /// indexed by the rule's domain names.
@@ -230,6 +244,8 @@ namespace DistillNET
         /// </returns>
         public async Task<Tuple<int, int>> ParseStoreRules(string[] rawRuleStrings, short categoryId)
         {
+            RecreateCache();
+
             int loaded = 0, failed = 0;
 
             using(var transaction = m_connection.BeginTransaction())
@@ -305,6 +321,8 @@ namespace DistillNET
         /// </returns>
         public async Task<Tuple<int, int>> ParseStoreRulesFromStream(Stream rawRulesStream, short categoryId)
         {
+            RecreateCache();
+
             int loaded = 0, failed = 0;
 
             using(var transaction = m_connection.BeginTransaction())
@@ -408,7 +426,16 @@ namespace DistillNET
         /// </returns>
         private async Task<List<UrlFilter>> GetFiltersForDomain(string domain, bool isWhitelist)
         {
-            var retVal = new List<UrlFilter>();
+            var cacheKey = new Tuple<string, bool>(domain, isWhitelist);
+
+            List<UrlFilter> retVal;
+
+            if(m_cache.TryGetValue(cacheKey, out retVal))
+            {
+                return retVal;
+            }
+
+            retVal = new List<UrlFilter>();
 
             var allPossibleVariations = GetAllPossibleSubdomains(domain);
             
@@ -453,6 +480,8 @@ namespace DistillNET
                     tsx.Commit();
                 }
             }
+
+            m_cache.Set(cacheKey, retVal);
 
             return retVal;
         }

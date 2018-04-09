@@ -55,7 +55,7 @@ namespace DistillNET
         }
 
         private static void Main(string[] args)
-        {
+        {   
             var parser = new AbpFormatRuleParser();
 
             string easylistPath = AppDomain.CurrentDomain.BaseDirectory + "easylist.txt";

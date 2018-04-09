@@ -65,12 +65,15 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DistillNET">
-      <Version>1.4.5</Version>
-    </PackageReference>
     <PackageReference Include="Microsoft.Data.SQLite">
-      <Version>2.0.0</Version>
+      <Version>2.0.1</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DistillNET\DistillNET.csproj">
+      <Project>{693840ca-eaf1-4718-bb1f-e2f9d6646e10}</Project>
+      <Name>DistillNET</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
