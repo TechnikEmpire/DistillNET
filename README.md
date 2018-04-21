@@ -6,7 +6,8 @@ DistillNET is available on [Nuget](https://www.nuget.org/packages/DistillNET/).
 [![Build Status](https://travis-ci.org/TechnikEmpire/DistillNET.svg?branch=master)](https://travis-ci.org/TechnikEmpire/DistillNET)
 <a href="https://scan.coverity.com/projects/technikempire-distillnet">
   <img alt="Coverity Scan Build Status"
-       src="https://scan.coverity.com/projects/15514/badge.svg"/>
+       src="https://scan.coverity.com/projects/15516/badge.svg"/>
+</a>
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/96bdb91a10a94bb7b47cdb9f5a0b14d4)](https://www.codacy.com/app/TechnikEmpire/DistillNET?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=TechnikEmpire/DistillNET&amp;utm_campaign=Badge_Grade)
 ![NugetLinkBadge](https://img.shields.io/nuget/v/DistillNET.svg)
 ![NugetDownloadsBadge](https://img.shields.io/nuget/dt/DistillNET.svg)  
