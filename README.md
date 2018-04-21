@@ -3,6 +3,11 @@ DistillNET is a library for matching and filtering HTTP requests and HTML respon
 
 DistillNET is available on [Nuget](https://www.nuget.org/packages/DistillNET/).
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/96bdb91a10a94bb7b47cdb9f5a0b14d4)](https://www.codacy.com/app/TechnikEmpire/DistillNET?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=TechnikEmpire/DistillNET&amp;utm_campaign=Badge_Grade)
+![NugetLinkBadge](https://img.shields.io/nuget/v/DistillNET.svg)
+![NugetDownloadsBadge](https://img.shields.io/nuget/dt/DistillNET.svg)  
+
+
 
 DistillNET was designed to be fast, considering every other factor last. An example of this is the fact that DistillNET will create multiple inserts into its database for the same rule, if more than one domain is attached to the rule. To be clear, the rule:
 
