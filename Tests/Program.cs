@@ -127,7 +127,7 @@ namespace DistillNET
             int loadedFilters = 0;
             sw.Restart();
             for(int i = 0; i < 1000; ++i)
-            {
+            {          
                 loadedFilters += filterCollection.GetFiltersForDomain().Count();
             }
             sw.Stop();

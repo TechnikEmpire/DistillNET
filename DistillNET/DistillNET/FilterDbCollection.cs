@@ -496,7 +496,7 @@ namespace DistillNET
                         break;
                     }
 
-                    var domainParam = new SqliteParameter("$domainId", System.Data.DbType.String);
+                    var domainParam = new SqliteParameter("$domainId", DbType.String);
                     cmd.Parameters.Add(domainParam);
 
                     cmd.Prepare();
