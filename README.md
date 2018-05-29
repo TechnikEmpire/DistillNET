@@ -27,20 +27,20 @@ Benchmark output on an `i7-6700 @ 3.4GHZ`:
 ```bash
 Testing Parser Speed
 About To Parse 61081 Filters From Easylist
-Parsed 61081 Easylist filters in 108 msec, averaging 0.00176814394001408 msec per filter.
+Parsed 61081 Easylist filters in 100 msec, averaging 0.00163717031482785 msec per filter.
 
 Testing Parser Speed
 About To Parse 1454513 Filters From Adult Domains
-Parsed 1454513 Adult Domains filters in 2102 msec, averaging 0.00144515724507103 msec per filter.
+Parsed 1454513 Adult Domains filters in 1955 msec, averaging 0.00134409249006368 msec per filter.
 
 Testing Parse And Store To DB Speed
-Parsed And Stored 1484236 filters in 11400 msec, averaging 0.00768071923871945 msec per filter.
+Parsed And Stored 1484236 filters in 6500 msec, averaging 0.00437935746067337 msec per filter.
 
 Testing Rule Lookup By Domain From DB
-Looked up and reconstructed 7778000 filters from DB in 28 msec, averaging 0.028 msec per lookup and 3.59989714579583E-06 msec per filter lookup and reconstruction.
+Looked up and reconstructed 7778000 filters from DB in 102 msec, averaging 0.102 msec per lookup and 1.31122252217509E-05 msec per filter lookup and reconstruction.
 
 Roughly Benchmarking Filter Matching Speed
-Filter matching loosely benchmarked at 0.7133 microseconds per check.
+Filter matching loosely benchmarked at 0.7198 microseconds per check.
 Press any key to exit...
 ```
 #### Before Version 1.4.6
