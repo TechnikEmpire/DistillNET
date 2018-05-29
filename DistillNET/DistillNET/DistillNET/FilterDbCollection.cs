@@ -424,7 +424,7 @@ namespace DistillNET
         /// <returns>
         /// A list of all compiled blacklisting URL filters for the given domain.
         /// </returns>
-        public List<UrlFilter> GetFiltersForDomain(string domain = "global")
+        public IEnumerable<UrlFilter> GetFiltersForDomain(string domain = "global")
         {
             return GetFiltersForDomain(domain, false);
         }
@@ -439,7 +439,7 @@ namespace DistillNET
         /// <returns>
         /// A list of all compiled whitelisting URL filters for the given domain.
         /// </returns>
-        public List<UrlFilter> GetWhitelistFiltersForDomain(string domain = "global")
+        public IEnumerable<UrlFilter> GetWhitelistFiltersForDomain(string domain = "global")
         {
             return GetFiltersForDomain(domain, true);
         }
@@ -456,14 +456,19 @@ namespace DistillNET
         /// <returns>
         /// A list of either all whitelist or all blacklist filters for the given domain.
         /// </returns>
-        private List<UrlFilter> GetFiltersForDomain(string domain, bool isWhitelist)
+        private IEnumerable<UrlFilter> GetFiltersForDomain(string domain, bool isWhitelist)
         {
             var cacheKey = new Tuple<string, bool>(domain, isWhitelist);
 
 
             if (m_cache.TryGetValue(cacheKey, out List<UrlFilter> retVal))
             {
-                return retVal;
+                foreach (var elm in retVal)
+                {
+                    yield return elm;
+                }
+
+                yield break;
             }
 
             retVal = new List<UrlFilter>();
@@ -505,7 +510,9 @@ namespace DistillNET
                             while(reader.Read())
                             {
                                 short catId = reader.GetInt16(1);
-                                retVal.Add((UrlFilter)m_ruleParser.ParseAbpFormattedRule(reader.GetString(3), catId));
+                                var newRule = (UrlFilter)m_ruleParser.ParseAbpFormattedRule(reader.GetString(3), catId);
+                                retVal.Add(newRule);
+                                yield return newRule;                                
                             }
                         }
                     }
@@ -514,7 +521,7 @@ namespace DistillNET
 
             m_cache.Set(cacheKey, retVal);
 
-            return retVal;
+            yield break;
         }
 
         private List<string> GetAllPossibleSubdomains(string inputDomain)
@@ -532,7 +539,7 @@ namespace DistillNET
             return retVal;
         }
 
-        public List<Filter> GetFiltersForRequest(Uri requestString, string referer = "")
+        public IEnumerable<Filter> GetFiltersForRequest(Uri requestString, string referer = "")
         {
             return null;
         }

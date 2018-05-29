@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace DistillNET
 {
@@ -127,7 +128,7 @@ namespace DistillNET
             sw.Restart();
             for(int i = 0; i < 1000; ++i)
             {
-                loadedFilters += filterCollection.GetFiltersForDomain().Count;
+                loadedFilters += filterCollection.GetFiltersForDomain().Count();
             }
             sw.Stop();
 
