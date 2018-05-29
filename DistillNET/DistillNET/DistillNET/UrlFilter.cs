@@ -603,37 +603,36 @@ namespace DistillNET
                 long thirdPartyBits = ((OptionsLong & (long)UrlFilterOptions.ThirdParty) | (OptionsLong & (long)UrlFilterOptions.ExceptThirdParty));
                 if((headerVal = rawHeaders.Get("Referer")) != null)
                 {
-                    Uri refererUri = null;
 
-                    if(Uri.TryCreate(headerVal, UriKind.RelativeOrAbsolute, out refererUri))
+                    if (Uri.TryCreate(headerVal, UriKind.RelativeOrAbsolute, out Uri refererUri))
                     {
                         string hostWithoutWww = refererUri.Host;
 
-                        if(hostWithoutWww.StartsWithQuick("www."))
+                        if (hostWithoutWww.StartsWithQuick("www."))
                         {
                             hostWithoutWww = hostWithoutWww.Substring(4);
                         }
 
-                        if(hostWithoutWww.Equals(uri.Host, StringComparison.OrdinalIgnoreCase))
+                        if (hostWithoutWww.Equals(uri.Host, StringComparison.OrdinalIgnoreCase))
                         {
                             thirdPartyBits &= ~(long)UrlFilterOptions.ExceptThirdParty;
                         }
                         else
                         {
                             thirdPartyBits &= ~(long)UrlFilterOptions.ThirdParty;
-                        }                        
+                        }
 
                         // While we have the referer field, let's go ahead and check if we have
                         // referer options and if we do or don't have a match.
                         //
                         // This is a shortcut. We unfortunately need to also execute this code also
                         // when there are no options.
-                        if(ApplicableReferers.Count > 0 && !ApplicableReferers.Contains(hostWithoutWww))
+                        if (ApplicableReferers.Count > 0 && !ApplicableReferers.Contains(hostWithoutWww))
                         {
                             return false;
                         }
 
-                        if(ExceptReferers.Count > 0 && ExceptReferers.Contains(hostWithoutWww))
+                        if (ExceptReferers.Count > 0 && ExceptReferers.Contains(hostWithoutWww))
                         {
                             return false;
                         }
@@ -699,23 +698,22 @@ namespace DistillNET
                     string headerVal = null;
                     if((headerVal = rawHeaders.Get("Referer")) != null)
                     {
-                        Uri refererUri = null;
 
-                        if(Uri.TryCreate(headerVal, UriKind.RelativeOrAbsolute, out refererUri))
+                        if (Uri.TryCreate(headerVal, UriKind.RelativeOrAbsolute, out Uri refererUri))
                         {
                             string hostWithoutWww = refererUri.Host;
 
-                            if(hostWithoutWww.StartsWithQuick("www."))
+                            if (hostWithoutWww.StartsWithQuick("www."))
                             {
                                 hostWithoutWww = hostWithoutWww.Substring(4);
                             }
 
-                            if(ApplicableReferers.Count > 0 && !ApplicableReferers.Contains(hostWithoutWww))
+                            if (ApplicableReferers.Count > 0 && !ApplicableReferers.Contains(hostWithoutWww))
                             {
                                 return false;
                             }
 
-                            if(ExceptReferers.Count > 0 && ExceptReferers.Contains(hostWithoutWww))
+                            if (ExceptReferers.Count > 0 && ExceptReferers.Contains(hostWithoutWww))
                             {
                                 return false;
                             }

@@ -20,12 +20,12 @@ namespace DistillNET
         /// <summary>
         /// Delimiters used for splitting URL filtering options.
         /// </summary>
-        private static char[] s_optionsDelim = new[] { ',' };
+        private static readonly char[] s_optionsDelim = new[] { ',' };
 
         /// <summary>
         /// Delimiters used for splitting domains specified in the URL filtering options "domains".
         /// </summary>
-        private static char[] s_domainsDelim = new[] { '|' };
+        private static readonly char[] s_domainsDelim = new[] { '|' };
 
         internal class OptionsDictComparer : IEqualityComparer<string>
         {
@@ -368,13 +368,14 @@ namespace DistillNET
                         }
                     }
                 }
+
 #endif
 
+
                 // Parse out the rest of the options.
-                UrlFilter.UrlFilterOptions asOpt;
-                foreach(var opt in allOptions)
-                {   
-                    if(s_optionsMap.TryGetValue(opt, out asOpt))
+                foreach (var opt in allOptions)
+                {
+                    if (s_optionsMap.TryGetValue(opt, out UrlFilter.UrlFilterOptions asOpt))
                     {
                         enumOptions |= asOpt;
                         enumOptions &= ~UrlFilter.UrlFilterOptions.None;
@@ -466,8 +467,7 @@ namespace DistillNET
                             break;
                         }
 
-                        Uri parsedUri = null;
-                        if(Uri.TryCreate(anchoredAddress, UriKind.Absolute, out parsedUri))
+                        if (Uri.TryCreate(anchoredAddress, UriKind.Absolute, out Uri parsedUri))
                         {
                             applicableDomains.Add(parsedUri.Host);
                         }

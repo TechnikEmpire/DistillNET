@@ -21,7 +21,7 @@ namespace DistillNET
 
             //"@@$third-party,referer=~pinterest.com"
 
-            col.ParseStoreRules(new[] { "@@$referer=pinterest.com" }, 1).Wait();
+            col.ParseStoreRules(new[] { "@@$referer=pinterest.com" }, 1);
             col.FinalizeForRead();
          
             var headersShouldMatch = new NameValueCollection(StringComparer.OrdinalIgnoreCase)
@@ -40,7 +40,7 @@ namespace DistillNET
 
             var uri = new Uri("http://silly.com/stoopid/url&=b1");
 
-            var allRules = col.GetWhitelistFiltersForDomain().Result;
+            var allRules = col.GetWhitelistFiltersForDomain();
 
             foreach(var wlr in allRules)
             {
@@ -55,7 +55,7 @@ namespace DistillNET
         }
 
         private static void Main(string[] args)
-        {   
+        {
             var parser = new AbpFormatRuleParser();
 
             string easylistPath = AppDomain.CurrentDomain.BaseDirectory + "easylist.txt";
@@ -112,8 +112,8 @@ namespace DistillNET
             var easylistFileStream = File.OpenRead(easylistPath);
 
             sw.Restart();
-            var adultResult = filterCollection.ParseStoreRulesFromStream(adultFileStream, 1).Result;
-            var easyListResult = filterCollection.ParseStoreRulesFromStream(easylistFileStream, 2).Result;
+            var adultResult = filterCollection.ParseStoreRulesFromStream(adultFileStream, 1);
+            var easyListResult = filterCollection.ParseStoreRulesFromStream(easylistFileStream, 2);
 
             // Ensure that we build the index AFTER we're all done our inserts.
             filterCollection.FinalizeForRead();
@@ -127,7 +127,7 @@ namespace DistillNET
             sw.Restart();
             for(int i = 0; i < 1000; ++i)
             {
-                loadedFilters += filterCollection.GetFiltersForDomain().Result.Count;
+                loadedFilters += filterCollection.GetFiltersForDomain().Count;
             }
             sw.Stop();
 

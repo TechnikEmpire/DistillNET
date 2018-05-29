@@ -6,21 +6,19 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DistillNET.Extensions
 {
     internal static class StringExtensions
     {
         /// <summary>
-        /// Determines if this string begins with the same character sequence as the supplied string.
+        /// Determines if this string begins with the same character sequence as the supplied string. 
         /// </summary>
         /// <param name="str">
-        /// This string.
+        /// This string. 
         /// </param>
         /// <param name="other">
-        /// The string to compare the beginning of this
+        /// The string to compare the beginning of this 
         /// </param>
         /// <returns>
         /// </returns>
@@ -34,21 +32,21 @@ namespace DistillNET.Extensions
             var len = str.Length;
             var olen = other.Length;
 
-            if(len == 0 || len < olen)
+            if (len == 0 || len < olen)
             {
                 return false;
             }
 
-            if(str[0] != other[0])
+            if (str[0] != other[0])
             {
                 return false;
             }
 
             var s = 1;
 
-            while(s < olen)
+            while (s < olen)
             {
-                if(str[s] != other[s])
+                if (str[s] != other[s])
                 {
                     return false;
                 }
@@ -63,10 +61,10 @@ namespace DistillNET.Extensions
         /// anchor string, if any.
         /// </summary>
         /// <param name="str">
-        /// This string.
+        /// This string. 
         /// </param>
         /// <param name="startIndex">
-        /// The index to begin searching at.
+        /// The index to begin searching at. 
         /// </param>
         /// <returns>
         /// A positive value indicating the index of a matched character in the event that one is
@@ -76,14 +74,14 @@ namespace DistillNET.Extensions
         {
             var len = str.Length;
 
-            if(startIndex >= len)
+            if (startIndex >= len)
             {
                 return -1;
             }
 
             do
             {
-                switch(str[startIndex])
+                switch (str[startIndex])
                 {
                     case '/':
                     case ':':
@@ -92,14 +90,14 @@ namespace DistillNET.Extensions
                     case '&':
                     case '*':
                     case '^':
-                    {
-                        return startIndex;
-                    }
+                        {
+                            return startIndex;
+                        }
                 }
 
                 ++startIndex;
             }
-            while(startIndex < len);
+            while (startIndex < len);
 
             return -1;
         }
@@ -108,21 +106,21 @@ namespace DistillNET.Extensions
         {
             var len = str.Length;
 
-            if(startIndex >= len)
+            if (startIndex >= len)
             {
                 return -1;
             }
 
             do
             {
-                if(str[startIndex] == what)
+                if (str[startIndex] == what)
                 {
                     return startIndex;
                 }
 
                 ++startIndex;
             }
-            while(startIndex < len);
+            while (startIndex < len);
 
             return -1;
         }
@@ -132,16 +130,16 @@ namespace DistillNET.Extensions
             var len = str.Length;
             var whatLen = what.Length;
 
-            if(startIndex > len || startIndex + whatLen > len)
+            if (startIndex > len || startIndex + whatLen > len)
             {
                 return -1;
             }
-            
+
             do
             {
-                if(str[startIndex] == what[0])
-                {   
-                    if(str.EqualsAt(what, startIndex))
+                if (str[startIndex] == what[0])
+                {
+                    if (str.EqualsAt(what, startIndex))
                     {
                         return startIndex;
                     }
@@ -149,19 +147,17 @@ namespace DistillNET.Extensions
 
                 ++startIndex;
             }
-            while(startIndex + whatLen < len);
+            while (startIndex + whatLen < len);
 
             return -1;
         }
 
         private static bool EqualsAt(this string str, string what, int index)
         {
-            
             var len = str.Length;
             var whatLen = what.Length;
-            if(index + whatLen > len)
-            {   
-                
+            if (index + whatLen > len)
+            {
                 return false;
             }
 
@@ -169,13 +165,13 @@ namespace DistillNET.Extensions
 
             do
             {
-                if(str[index + relOffset] != what[relOffset])
+                if (str[index + relOffset] != what[relOffset])
                 {
                     return false;
                 }
                 ++relOffset;
             }
-            while(relOffset < whatLen);
+            while (relOffset < whatLen);
 
             return true;
         }
@@ -183,17 +179,17 @@ namespace DistillNET.Extensions
         public static string TrimQuick(this string str)
         {
             bool trimming = true;
-            while(trimming && str.Length > 0)
+            while (trimming && str.Length > 0)
             {
-                if(char.IsWhiteSpace(str[0]))
+                if (char.IsWhiteSpace(str[0]))
                 {
                     str = str.Substring(1);
                     continue;
                 }
 
-                if(char.IsWhiteSpace(str[str.Length-1]))
+                if (char.IsWhiteSpace(str[str.Length - 1]))
                 {
-                    str = str.Substring(0, str.Length-1);
+                    str = str.Substring(0, str.Length - 1);
                     continue;
                 }
 
@@ -207,86 +203,86 @@ namespace DistillNET.Extensions
             var whatLen = what.Length;
             var thisLen = str.Length;
             var startOffset = thisLen - whatLen;
-            if(thisLen == 0 || startOffset < 0)
+            if (thisLen == 0 || startOffset < 0)
             {
                 return -1;
             }
 
-            switch(whatLen)
+            switch (whatLen)
             {
                 case 3:
-                {
-                    do
                     {
-                        if(str[startOffset] != what[0])
+                        do
                         {
-                            --startOffset;
-                            continue;
-                        }
+                            if (str[startOffset] != what[0])
+                            {
+                                --startOffset;
+                                continue;
+                            }
 
-                        if(str[startOffset + 1] != what[1])
-                        {
-                            --startOffset;
-                            continue;
-                        }
+                            if (str[startOffset + 1] != what[1])
+                            {
+                                --startOffset;
+                                continue;
+                            }
 
-                        if(str[startOffset + 2] != what[2])
-                        {
-                            --startOffset;
-                            continue;
-                        }
+                            if (str[startOffset + 2] != what[2])
+                            {
+                                --startOffset;
+                                continue;
+                            }
 
-                        return startOffset;
+                            return startOffset;
+                        }
+                        while (startOffset > -1);
+
+                        return -1;
                     }
-                    while(startOffset > -1);
-
-                    return -1;
-                }
 
                 case 2:
-                {
-                    do
                     {
-                        if(str[startOffset] != what[0])
+                        do
                         {
-                            --startOffset;
-                            continue;
-                        }
+                            if (str[startOffset] != what[0])
+                            {
+                                --startOffset;
+                                continue;
+                            }
 
-                        if(str[startOffset + 1] != what[1])
-                        {
-                            --startOffset;
-                            continue;
-                        }
+                            if (str[startOffset + 1] != what[1])
+                            {
+                                --startOffset;
+                                continue;
+                            }
 
-                        return startOffset;
+                            return startOffset;
+                        }
+                        while (startOffset > -1);
+
+                        return -1;
                     }
-                    while(startOffset > -1);
-
-                    return -1;
-                }
 
                 case 1:
-                {
-                    do
                     {
-                        if(str[startOffset] != what[0])
+                        do
                         {
-                            --startOffset;
-                            continue;
+                            if (str[startOffset] != what[0])
+                            {
+                                --startOffset;
+                                continue;
+                            }
+
+                            return startOffset;
                         }
+                        while (startOffset > -1);
 
-                        return startOffset;
+                        return -1;
                     }
-                    while(startOffset > -1);
-
-                    return -1;
-                }
 
                 default:
-                {
-                    throw new ArgumentException("String length is unsupported.", nameof(what));
-                }
+                    {
+                        throw new ArgumentException("String length is unsupported.", nameof(what));
+                    }
             }
         }
     }

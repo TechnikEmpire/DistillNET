@@ -52,7 +52,7 @@ namespace DistillNET
         /// <summary>
         /// Mem cache options.
         /// </summary>
-        private MemoryCacheOptions m_cacheOptions;
+        private readonly MemoryCacheOptions m_cacheOptions;
 
         /// <summary>
         /// Constructs a new FilterDbCollection using an in-memory database.
@@ -89,8 +89,10 @@ namespace DistillNET
 
             if(cacheOptions == null)
             {
-                cacheOptions = new MemoryCacheOptions();                
-                cacheOptions.ExpirationScanFrequency = TimeSpan.FromMinutes(10);
+                cacheOptions = new MemoryCacheOptions
+                {
+                    ExpirationScanFrequency = TimeSpan.FromMinutes(10)
+                };
             }
 
             m_cacheOptions = cacheOptions;
@@ -107,19 +109,23 @@ namespace DistillNET
                 var generatedDbName = string.Format("{0} {1} - {2}", nameof(FilterDbCollection), version, rndNum);
 
                 // "Data Source = :memory:; Cache = shared;"
-                var cb = new SqliteConnectionStringBuilder();
-                cb.Mode = SqliteOpenMode.Memory;
-                cb.Cache = SqliteCacheMode.Shared;
-                cb.DataSource = generatedDbName;
+                var cb = new SqliteConnectionStringBuilder
+                {
+                    Mode = SqliteOpenMode.Memory,
+                    Cache = SqliteCacheMode.Shared,
+                    DataSource = generatedDbName
+                };
                 m_connection = new SqliteConnection(cb.ToString());
             }
             else
             {
                 // "Data Source={0};"
-                var cb = new SqliteConnectionStringBuilder();
-                cb.Mode = SqliteOpenMode.ReadWriteCreate;
-                cb.Cache = SqliteCacheMode.Shared;
-                cb.DataSource = dbAbsolutePath;
+                var cb = new SqliteConnectionStringBuilder
+                {
+                    Mode = SqliteOpenMode.ReadWriteCreate,
+                    Cache = SqliteCacheMode.Shared,
+                    DataSource = dbAbsolutePath
+                };
                 m_connection = new SqliteConnection(cb.ToString());                
             }
 
@@ -137,58 +143,69 @@ namespace DistillNET
         /// Configures the database page size, cache size for optimal performance according to our
         /// needs.
         /// </summary>
-        private async void ConfigureDatabase()
+        private void ConfigureDatabase()
         {
             using(var cmd = m_connection.CreateCommand())
             {
-                cmd.CommandText = "PRAGMA page_size=65536;";
-                await cmd.ExecuteNonQueryAsync();
-
                 cmd.CommandText = "PRAGMA cache_size=-65536;";
-                await cmd.ExecuteNonQueryAsync();
+                cmd.ExecuteNonQuery();
+
+                /*
+                cmd.CommandText = "PRAGMA page_size=65536;";
+                cmd.ExecuteNonQuery();
 
                 cmd.CommandText = "PRAGMA soft_heap_limit=131072;";
-                await cmd.ExecuteNonQueryAsync();
+                cmd.ExecuteNonQuery();
+                 */
 
                 cmd.CommandText = "PRAGMA synchronous=OFF;";
-                await cmd.ExecuteNonQueryAsync();
+                cmd.ExecuteNonQuery();
 
                 cmd.CommandText = "PRAGMA journal_mode=OFF;";
-                await cmd.ExecuteNonQueryAsync();
+                cmd.ExecuteNonQuery();
 
                 cmd.CommandText = "PRAGMA locking_mode=NORMAL;";
-                await cmd.ExecuteNonQueryAsync();
+                cmd.ExecuteNonQuery();
 
                 cmd.CommandText = "PRAGMA temp_store=2;";
-                await cmd.ExecuteNonQueryAsync();
+                cmd.ExecuteNonQuery();
 
                 cmd.CommandText = "PRAGMA ignore_check_constraints=TRUE;";
-                await cmd.ExecuteNonQueryAsync();
+                cmd.ExecuteNonQuery();
 
                 cmd.CommandText = "PRAGMA cell_size_check=FALSE;";
-                await cmd.ExecuteNonQueryAsync();
+                cmd.ExecuteNonQuery();
 
                 cmd.CommandText = "PRAGMA cache_spill=FALSE;";
-                await cmd.ExecuteNonQueryAsync();
+                cmd.ExecuteNonQuery();
 
                 cmd.CommandText = "PRAGMA automatic_index=FALSE;";
-                await cmd.ExecuteNonQueryAsync();
+                cmd.ExecuteNonQuery();
 
                 cmd.CommandText = "PRAGMA busy_timeout=20000;";
-                await cmd.ExecuteNonQueryAsync();
+                cmd.ExecuteNonQuery();
+
+                cmd.CommandText = "PRAGMA secure_delete=FALSE;";
+                cmd.ExecuteNonQuery();
+
+                cmd.CommandText = "PRAGMA shrink_memory;";
+                cmd.ExecuteNonQuery();
+
+                cmd.CommandText = string.Format("PRAGMA threads={0};", Environment.ProcessorCount);
+                cmd.ExecuteNonQuery();
             }
         }
 
         /// <summary>
         /// Creates needed tables on the source database if they do not exist.
         /// </summary>
-        private async void CreateTables()
+        private void CreateTables()
         {
             using(var tsx = m_connection.BeginTransaction())
-            using(var command = m_connection.CreateCommand())
+            using (var command = m_connection.CreateCommand())
             {
                 command.CommandText = "CREATE TABLE IF NOT EXISTS UrlFiltersIndex (Domains VARCHAR(255), CategoryId INT16, IsWhitelist BOOL, Source TEXT)";
-                await command.ExecuteNonQueryAsync();
+                command.ExecuteNonQuery();
 
                 tsx.Commit();
             }
@@ -203,6 +220,12 @@ namespace DistillNET
             {
                 command.CommandText = "CREATE INDEX IF NOT EXISTS domain_index ON UrlFiltersIndex (Domains)";
                 command.ExecuteNonQuery();
+
+                command.CommandText = "CREATE INDEX IF NOT EXISTS whitelist_index ON UrlFiltersIndex (IsWhitelist)";
+                command.ExecuteNonQuery();
+
+                command.CommandText = "CREATE INDEX IF NOT EXISTS dual_index ON UrlFiltersIndex (Domains, IsWhitelist)";
+                command.ExecuteNonQuery();
             }
         }
 
@@ -215,6 +238,13 @@ namespace DistillNET
         public void FinalizeForRead()
         {
             CreatedIndexes();
+
+            using (var cmd = m_connection.CreateCommand())
+            {
+                // Put the database in read-only mode.
+                cmd.CommandText = "PRAGMA query_only=TRUE;";
+                cmd.ExecuteNonQuery();
+            }
         }
 
         private void RecreateCache()
@@ -242,7 +272,7 @@ namespace DistillNET
         /// and the second item is the total number of rules that failed to be parsed and stored.
         /// Failed rules are an indication of improperly formatted rules.
         /// </returns>
-        public async Task<Tuple<int, int>> ParseStoreRules(string[] rawRuleStrings, short categoryId)
+        public Tuple<int, int> ParseStoreRules(string[] rawRuleStrings, short categoryId)
         {
             RecreateCache();
 
@@ -251,7 +281,7 @@ namespace DistillNET
             using(var transaction = m_connection.BeginTransaction())
             {
                 using(var cmd = m_connection.CreateCommand())
-                {
+                {   
                     cmd.CommandText = "INSERT INTO UrlFiltersIndex VALUES ($domain, $categoryId, $isWhitelist, $source)";
                     var domainParam = new SqliteParameter("$domain", DbType.String);
                     var categoryIdParam = new SqliteParameter("$categoryId", DbType.Int16);
@@ -262,13 +292,14 @@ namespace DistillNET
                     cmd.Parameters.Add(isWhitelistParam);
                     cmd.Parameters.Add(sourceParam);
 
+                    cmd.Prepare();
+
                     var len = rawRuleStrings.Length;                    
                     for(int i = 0; i < len; ++i)
                     {
                         rawRuleStrings[i] = rawRuleStrings[i].TrimQuick();
-                        var filter = m_ruleParser.ParseAbpFormattedRule(rawRuleStrings[i], categoryId) as UrlFilter;
 
-                        if(filter == null)
+                        if (!(m_ruleParser.ParseAbpFormattedRule(rawRuleStrings[i], categoryId) is UrlFilter filter))
                         {
                             ++failed;
                             continue;
@@ -284,7 +315,7 @@ namespace DistillNET
                                 cmd.Parameters[1].Value = categoryId;
                                 cmd.Parameters[2].Value = filter.IsException;
                                 cmd.Parameters[3].Value = rawRuleStrings[i];
-                                await cmd.ExecuteNonQueryAsync();
+                                cmd.ExecuteNonQuery();
                             }
                         }
                         else
@@ -293,7 +324,7 @@ namespace DistillNET
                             cmd.Parameters[1].Value = categoryId;
                             cmd.Parameters[2].Value = filter.IsException;
                             cmd.Parameters[3].Value = rawRuleStrings[i];
-                            await cmd.ExecuteNonQueryAsync();
+                            cmd.ExecuteNonQuery();
                         }
                     }
                 }
@@ -319,7 +350,7 @@ namespace DistillNET
         /// and the second item is the total number of rules that failed to be parsed and stored.
         /// Failed rules are an indication of improperly formatted rules.
         /// </returns>
-        public async Task<Tuple<int, int>> ParseStoreRulesFromStream(Stream rawRulesStream, short categoryId)
+        public Tuple<int, int> ParseStoreRulesFromStream(Stream rawRulesStream, short categoryId)
         {
             RecreateCache();
 
@@ -339,20 +370,21 @@ namespace DistillNET
                     cmd.Parameters.Add(isWhitelistParam);
                     cmd.Parameters.Add(sourceParam);
 
+                    cmd.Prepare();
+
                     string line = null;
                     using(var sw = new StreamReader(rawRulesStream))
-                    while((line = await sw.ReadLineAsync()) != null)
+                    while((line = sw.ReadLine()) != null)
                     {
                         line = line.TrimQuick();
-                        var filter = m_ruleParser.ParseAbpFormattedRule(line, categoryId) as UrlFilter;
 
-                        if(filter == null)
-                        {
-                            ++failed;
-                            continue;
-                        }
+                            if (!(m_ruleParser.ParseAbpFormattedRule(line, categoryId) is UrlFilter filter))
+                            {
+                                ++failed;
+                                continue;
+                            }
 
-                        ++loaded;
+                            ++loaded;
 
                         if(filter.ApplicableDomains.Count > 0)
                         {
@@ -362,7 +394,7 @@ namespace DistillNET
                                 cmd.Parameters[1].Value = categoryId;
                                 cmd.Parameters[2].Value = filter.IsException;
                                 cmd.Parameters[3].Value = line;
-                                await cmd.ExecuteNonQueryAsync();
+                                cmd.ExecuteNonQuery();
                             }
                         }
                         else
@@ -371,7 +403,7 @@ namespace DistillNET
                             cmd.Parameters[1].Value = categoryId;
                             cmd.Parameters[2].Value = filter.IsException;
                             cmd.Parameters[3].Value = line;
-                            await cmd.ExecuteNonQueryAsync();
+                            cmd.ExecuteNonQuery();
                         }
                     }
                 }
@@ -392,9 +424,9 @@ namespace DistillNET
         /// <returns>
         /// A list of all compiled blacklisting URL filters for the given domain.
         /// </returns>
-        public async Task<List<UrlFilter>> GetFiltersForDomain(string domain = "global")
+        public List<UrlFilter> GetFiltersForDomain(string domain = "global")
         {
-            return await GetFiltersForDomain(domain, false);
+            return GetFiltersForDomain(domain, false);
         }
 
         /// <summary>
@@ -407,9 +439,9 @@ namespace DistillNET
         /// <returns>
         /// A list of all compiled whitelisting URL filters for the given domain.
         /// </returns>
-        public async Task<List<UrlFilter>> GetWhitelistFiltersForDomain(string domain = "global")
+        public List<UrlFilter> GetWhitelistFiltersForDomain(string domain = "global")
         {
-            return await GetFiltersForDomain(domain, true);
+            return GetFiltersForDomain(domain, true);
         }
 
         /// <summary>
@@ -424,13 +456,12 @@ namespace DistillNET
         /// <returns>
         /// A list of either all whitelist or all blacklist filters for the given domain.
         /// </returns>
-        private async Task<List<UrlFilter>> GetFiltersForDomain(string domain, bool isWhitelist)
+        private List<UrlFilter> GetFiltersForDomain(string domain, bool isWhitelist)
         {
             var cacheKey = new Tuple<string, bool>(domain, isWhitelist);
 
-            List<UrlFilter> retVal;
 
-            if(m_cache.TryGetValue(cacheKey, out retVal))
+            if (m_cache.TryGetValue(cacheKey, out List<UrlFilter> retVal))
             {
                 return retVal;
             }
@@ -441,9 +472,8 @@ namespace DistillNET
             
             using(var myConn = new SqliteConnection(m_connection.ConnectionString))
             {
-                await myConn.OpenAsync();
+                myConn.Open();
 
-                using(var tsx = myConn.BeginTransaction())
                 using(var cmd = myConn.CreateCommand())
                 {
                     switch(isWhitelist)
@@ -464,20 +494,21 @@ namespace DistillNET
                     var domainParam = new SqliteParameter("$domainId", System.Data.DbType.String);
                     cmd.Parameters.Add(domainParam);
 
-                    foreach(var sub in allPossibleVariations)
+                    cmd.Prepare();
+
+                    foreach (var sub in allPossibleVariations)
                     {
                         cmd.Parameters[0].Value = sub;
 
-                        using(var reader = await cmd.ExecuteReaderAsync())
+                        using(var reader = cmd.ExecuteReader())
                         {
-                            while(await reader.ReadAsync())
+                            while(reader.Read())
                             {
                                 short catId = reader.GetInt16(1);
                                 retVal.Add((UrlFilter)m_ruleParser.ParseAbpFormattedRule(reader.GetString(3), catId));
                             }
                         }
                     }
-                    tsx.Commit();
                 }
             }
 
