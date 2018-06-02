@@ -9,12 +9,13 @@
     <RepositoryUrl>https://github.com/TechnikEmpire/DistillNET</RepositoryUrl>
     <Description>DistillNET is a library for matching and filtering HTTP requests URLs using the Adblock Plus Filter format.</Description>
     <Copyright>Copyright © 2017 - 2018 Jesse Nicholson</Copyright>
-    <Version>1.6.0</Version>
+    <Version>1.6.1</Version>
     <Authors>Jesse Nicholson</Authors>
     <Company>Technik Empire</Company>
     <PackageTags>DistillNET Adblock AdblockPlus Adblock-Plus URL-Filter URL-Filtering Content-Filter Filter</PackageTags>
-    <PackageReleaseNotes>Changed public API to use IEnumerable and yield return/yield break so that users do not have to load entire database query results to find matches. This should improve performance of matching.</PackageReleaseNotes>
-    <AssemblyVersion>1.6.0.0</AssemblyVersion>
+    <PackageReleaseNotes>Upgrade depends to .NET core 2.1 release.</PackageReleaseNotes>
+    <AssemblyVersion>1.6.1.0</AssemblyVersion>
+    <FileVersion>1.6.11.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -26,8 +27,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SQLite" Version="2.1.0-rc1-final" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.0.2" />
+    <PackageReference Include="Microsoft.Data.SQLite" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.1.0" />
   </ItemGroup>
 
 </Project>
