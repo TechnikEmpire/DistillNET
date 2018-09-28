@@ -1,25 +1,25 @@
 ﻿/*
- * Copyright © 2017 Jesse Nicholson
+ * Copyright © 2018 Jesse Nicholson
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
 using System;
-using System.Runtime.CompilerServices;
+using System.Collections.Generic;
 
 namespace DistillNET.Extensions
 {
-    internal static class StringExtensions
+    internal static class SpanExtensions
     {
         /// <summary>
-        /// Determines if this string begins with the same character sequence as the supplied string. 
+        /// Determines if this ReadOnlySpan begins with the same character sequence as the supplied string.
         /// </summary>
         /// <param name="str">
-        /// This string. 
+        /// This string.
         /// </param>
         /// <param name="other">
-        /// The string to compare the beginning of this 
+        /// The ReadOnlySpan to compare the beginning of this
         /// </param>
         /// <returns>
         /// </returns>
@@ -28,8 +28,7 @@ namespace DistillNET.Extensions
         /// built in method invokes various internationalization methods inside the .net framework
         /// that simply are not necessary for our purposes.
         /// </remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool StartsWithQuick(this string str, string other)
+        public static bool StartsWithQuick(this ReadOnlySpan<char> str, ReadOnlySpan<char> other)
         {
             var len = str.Length;
             var olen = other.Length;
@@ -63,17 +62,16 @@ namespace DistillNET.Extensions
         /// anchor string, if any.
         /// </summary>
         /// <param name="str">
-        /// This string. 
+        /// This string.
         /// </param>
         /// <param name="startIndex">
-        /// The index to begin searching at. 
+        /// The index to begin searching at.
         /// </param>
         /// <returns>
         /// A positive value indicating the index of a matched character in the event that one is
         /// found, a negative number in the event that no such character is found.
         /// </returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfAnchorEnd(this string str, int startIndex = 0)
+        public static int IndexOfAnchorEnd(this ReadOnlySpan<char> str, int startIndex = 0)
         {
             var len = str.Length;
 
@@ -105,9 +103,8 @@ namespace DistillNET.Extensions
             return -1;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfQuick(this string str, char what, int startIndex = 0)
-        {
+        public static int IndexOfQuick(this ReadOnlySpan<char> str, char what, int startIndex = 0)
+        {   
             var len = str.Length;
 
             if (startIndex >= len)
@@ -129,8 +126,30 @@ namespace DistillNET.Extensions
             return -1;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfQuick(this string str, string what, int startIndex = 0)
+        public static int IndexOfQuickICase(this ReadOnlySpan<char> str, char what, int startIndex = 0)
+        {
+            var len = str.Length;
+
+            if (startIndex >= len)
+            {
+                return -1;
+            }
+
+            do
+            {
+                if (str[startIndex].ToUpperFast() == what.ToUpperFast())
+                {
+                    return startIndex;
+                }
+
+                ++startIndex;
+            }
+            while (startIndex < len);
+
+            return -1;
+        }
+
+        public static int IndexOfQuick(this ReadOnlySpan<char> str, ReadOnlySpan<char> what, int startIndex = 0)
         {
             var len = str.Length;
             var whatLen = what.Length;
@@ -157,8 +176,34 @@ namespace DistillNET.Extensions
             return -1;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool EqualsAt(this string str, string what, int index)
+        public static int IndexOfQuickICase(this ReadOnlySpan<char> str, ReadOnlySpan<char> what, int startIndex = 0)
+        {
+            var len = str.Length;
+            var whatLen = what.Length;
+
+            if (startIndex > len || startIndex + whatLen > len)
+            {
+                return -1;
+            }
+
+            do
+            {
+                if (str[startIndex].ToUpperFast() == what[0].ToUpperFast())
+                {
+                    if (str.EqualsAtICase(what, startIndex))
+                    {
+                        return startIndex;
+                    }
+                }
+
+                ++startIndex;
+            }
+            while (startIndex + whatLen < len);
+
+            return -1;
+        }
+
+        public static bool EqualsAt(this ReadOnlySpan<char> str, ReadOnlySpan<char> what, int index)
         {
             var len = str.Length;
             var whatLen = what.Length;
@@ -182,8 +227,7 @@ namespace DistillNET.Extensions
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool EqualsAtICase(this string str, string what, int index)
+        public static bool EqualsAtICase(this ReadOnlySpan<char> str, ReadOnlySpan<char> what, int index)
         {
             var len = str.Length;
             var whatLen = what.Length;
@@ -196,7 +240,7 @@ namespace DistillNET.Extensions
 
             do
             {
-                if (str[index + relOffset].ToUpperFast() != what[relOffset].ToUpperFast())
+                if (str[index + relOffset].ToLowerFast() != what[relOffset].ToLowerFast())
                 {
                     return false;
                 }
@@ -207,21 +251,20 @@ namespace DistillNET.Extensions
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string TrimQuick(this string str)
+        public static ReadOnlySpan<char> TrimQuick(this ReadOnlySpan<char> str)
         {
             bool trimming = true;
             while (trimming && str.Length > 0)
             {
                 if (char.IsWhiteSpace(str[0]))
                 {
-                    str = str.Substring(1);
+                    str = str.Slice(1);
                     continue;
                 }
 
                 if (char.IsWhiteSpace(str[str.Length - 1]))
                 {
-                    str = str.Substring(0, str.Length - 1);
+                    str = str.Slice(0, str.Length - 1);
                     continue;
                 }
 
@@ -230,8 +273,7 @@ namespace DistillNET.Extensions
             return str;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int LastIndexOfQuick(this string str, string what)
+        public static int LastIndexOfQuick(this ReadOnlySpan<char> str, ReadOnlySpan<char> what)
         {
             var whatLen = what.Length;
             var thisLen = str.Length;
@@ -300,6 +342,94 @@ namespace DistillNET.Extensions
                         do
                         {
                             if (str[startOffset] != what[0])
+                            {
+                                --startOffset;
+                                continue;
+                            }
+
+                            return startOffset;
+                        }
+                        while (startOffset > -1);
+
+                        return -1;
+                    }
+
+                default:
+                    {
+                        throw new ArgumentException("String length is unsupported.", nameof(what));
+                    }
+            }
+        }
+
+        public static int LastIndexOfQuickICase(this ReadOnlySpan<char> str, ReadOnlySpan<char> what)
+        {
+            var whatLen = what.Length;
+            var thisLen = str.Length;
+            var startOffset = thisLen - whatLen;
+            if (thisLen == 0 || startOffset < 0)
+            {
+                return -1;
+            }
+
+            switch (whatLen)
+            {
+                case 3:
+                    {
+                        do
+                        {
+                            if (str[startOffset].ToUpperFast() != what[0].ToUpperFast())
+                            {
+                                --startOffset;
+                                continue;
+                            }
+
+                            if (str[startOffset + 1].ToUpperFast() != what[1].ToUpperFast())
+                            {
+                                --startOffset;
+                                continue;
+                            }
+
+                            if (str[startOffset + 2].ToUpperFast() != what[2].ToUpperFast())
+                            {
+                                --startOffset;
+                                continue;
+                            }
+
+                            return startOffset;
+                        }
+                        while (startOffset > -1);
+
+                        return -1;
+                    }
+
+                case 2:
+                    {
+                        do
+                        {
+                            if (str[startOffset].ToUpperFast() != what[0].ToUpperFast())
+                            {
+                                --startOffset;
+                                continue;
+                            }
+
+                            if (str[startOffset + 1].ToUpperFast() != what[1].ToUpperFast())
+                            {
+                                --startOffset;
+                                continue;
+                            }
+
+                            return startOffset;
+                        }
+                        while (startOffset > -1);
+
+                        return -1;
+                    }
+
+                case 1:
+                    {
+                        do
+                        {
+                            if (str[startOffset].ToUpperFast() != what[0].ToUpperFast())
                             {
                                 --startOffset;
                                 continue;

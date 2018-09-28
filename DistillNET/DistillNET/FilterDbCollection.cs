@@ -61,7 +61,18 @@ namespace DistillNET
         /// User defined query caching options.
         /// </param>
         public FilterDbCollection(MemoryCacheOptions cacheOptions = null) : this(null, true, true, cacheOptions)
-        {   
+        {
+            if (cacheOptions == null)
+            {
+                cacheOptions = new MemoryCacheOptions
+                {
+                    ExpirationScanFrequency = TimeSpan.FromMinutes(10)
+                };
+            }
+
+            m_cacheOptions = cacheOptions;
+
+            RecreateCache();
         }
 
         /// <summary>
@@ -82,7 +93,7 @@ namespace DistillNET
         /// </param>
         public FilterDbCollection(string dbAbsolutePath, bool overwrite = true, bool useMemory = false, MemoryCacheOptions cacheOptions = null)
         {
-            if(!useMemory && overwrite && File.Exists(dbAbsolutePath))
+            if (!useMemory && overwrite && File.Exists(dbAbsolutePath))
             {
                 File.Delete(dbAbsolutePath);
             }
@@ -96,6 +107,8 @@ namespace DistillNET
             }
 
             m_cacheOptions = cacheOptions;
+
+            RecreateCache();
 
             bool isNew = !File.Exists(dbAbsolutePath);
 
@@ -149,14 +162,6 @@ namespace DistillNET
             {
                 cmd.CommandText = "PRAGMA cache_size=-65536;";
                 cmd.ExecuteNonQuery();
-
-                /*
-                cmd.CommandText = "PRAGMA page_size=65536;";
-                cmd.ExecuteNonQuery();
-
-                cmd.CommandText = "PRAGMA soft_heap_limit=131072;";
-                cmd.ExecuteNonQuery();
-                 */
 
                 cmd.CommandText = "PRAGMA synchronous=OFF;";
                 cmd.ExecuteNonQuery();
@@ -460,15 +465,17 @@ namespace DistillNET
         {
             var cacheKey = new Tuple<string, bool>(domain, isWhitelist);
 
-
             if (m_cache.TryGetValue(cacheKey, out List<UrlFilter> retVal))
             {
-                foreach (var elm in retVal)
+                if (retVal != null)
                 {
-                    yield return elm;
-                }
+                    foreach (var elm in retVal)
+                    {
+                        yield return elm;
+                    }
 
-                yield break;
+                    yield break;
+                }
             }
 
             retVal = new List<UrlFilter>();
@@ -512,7 +519,6 @@ namespace DistillNET
                                 short catId = reader.GetInt16(1);
                                 var newRule = (UrlFilter)m_ruleParser.ParseAbpFormattedRule(reader.GetString(3), catId);
                                 retVal.Add(newRule);
-                                yield return newRule;                                
                             }
                         }
                     }
@@ -520,6 +526,11 @@ namespace DistillNET
             }
 
             m_cache.Set(cacheKey, retVal);
+
+            foreach (var elm in retVal)
+            {
+                yield return elm;
+            }
 
             yield break;
         }

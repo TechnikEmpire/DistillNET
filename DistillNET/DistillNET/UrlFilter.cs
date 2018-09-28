@@ -359,9 +359,20 @@ namespace DistillNET
                     return -1;
                 }
 
-                if(source.AbsoluteUri.Substring(0, Request.Length).Equals(Request, ICase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+                if (ICase)
                 {
-                    return Request.Length;
+                    if (source.AbsoluteUri.Substring(0, Request.Length).EqualsAtICase(Request, 0))
+                    {
+                        return Request.Length;
+                    }
+                }
+                else
+                {
+                    if (source.AbsoluteUri.Substring(0, Request.Length).EqualsAt(Request, 0))
+                    {
+                        return Request.Length;
+                    }
+
                 }
 
                 return -1;
@@ -396,7 +407,7 @@ namespace DistillNET
                     return -1;
                 }
 
-                if(Domain.Equals(source.Host.Substring(source.Host.Length - Domain.Length), StringComparison.OrdinalIgnoreCase))
+                if(Domain.EqualsAt(source.Host.Substring(source.Host.Length - Domain.Length), 0))
                 {
                     // Why + 3? Because of "://". The scheme doesn't include this.
                     return source.Scheme.Length + 3 + source.Host.Length;
@@ -583,7 +594,7 @@ namespace DistillNET
                 long xmlHttpRequestBits = ((OptionsLong & (long)UrlFilterOptions.ExceptXmlHttpRequest) | (OptionsLong & (long)UrlFilterOptions.XmlHttpRequest));
                 if((headerVal = rawHeaders.Get("X-Requested-With")) != null)
                 {
-                    if(headerVal.Equals("XMLHttpRequest", StringComparison.OrdinalIgnoreCase))
+                    if(headerVal.EqualsAtICase("XMLHttpRequest", 0))
                     {
                         xmlHttpRequestBits &= ~(long)UrlFilterOptions.XmlHttpRequest;
                     }
@@ -613,7 +624,7 @@ namespace DistillNET
                             hostWithoutWww = hostWithoutWww.Substring(4);
                         }
 
-                        if (hostWithoutWww.Equals(uri.Host, StringComparison.OrdinalIgnoreCase))
+                        if (hostWithoutWww.EqualsAtICase(uri.Host, 0))
                         {
                             thirdPartyBits &= ~(long)UrlFilterOptions.ExceptThirdParty;
                         }
