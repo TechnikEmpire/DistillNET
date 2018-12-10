@@ -260,6 +260,17 @@ namespace DistillNET
         /// </summary>
         public class UrlFilteringRuleFragment
         {
+            /// <summary>
+            /// Gets whether or not the supplied URI matches this rule segment.
+            /// </summary>
+            /// <param name="source">
+            /// The URI.
+            /// </param>
+            /// <param name="lastPosition">
+            /// The current position in scan.
+            /// </param>
+            /// <returns>
+            /// </returns>
             public virtual int IsMatch(Uri source, int lastPosition)
             {
                 return -1;
@@ -272,6 +283,17 @@ namespace DistillNET
         /// </summary>
         public class WildcardFragment : UrlFilteringRuleFragment
         {
+            /// <summary>
+            /// Gets whether or not the supplied URI matches this rule segment.
+            /// </summary>
+            /// <param name="source">
+            /// The URI.
+            /// </param>
+            /// <param name="lastPosition">
+            /// The current position in scan.
+            /// </param>
+            /// <returns>
+            /// </returns>
             public override int IsMatch(Uri source, int lastPosition)
             {
                 var stepOne = lastPosition + 1;
@@ -290,8 +312,22 @@ namespace DistillNET
         /// </summary>
         public class SeparatorFragment : UrlFilteringRuleFragment
         {
+            /// <summary>
+            /// An array of characters that qualify as separator characters.
+            /// </summary>
             public static readonly char[] SeparatorChars = new[] { '/', ':', '?', '=', '&' };
 
+            /// <summary>
+            /// Gets whether or not the supplied URI matches this rule segment.
+            /// </summary>
+            /// <param name="source">
+            /// The URI.
+            /// </param>
+            /// <param name="lastPosition">
+            /// The current position in scan.
+            /// </param>
+            /// <returns>
+            /// </returns>
             public override int IsMatch(Uri source, int lastPosition)
             {
                 if(lastPosition > source.AbsoluteUri.Length)
@@ -309,17 +345,29 @@ namespace DistillNET
         /// </summary>
         public class StringFragment : UrlFilteringRuleFragment
         {
+            /// <summary>
+            /// Gets whether or not this rule ignores case during comparison.
+            /// </summary>
             public bool ICase
             {
                 get;
                 private set;
             } = true;
 
+            /// <summary>
+            /// Constructs a new instance.
+            /// </summary>
+            /// <param name="iCase">
+            /// Whether or not this rule ignores case during comparison.
+            /// </param>
             public StringFragment(bool iCase)
             {
                 ICase = iCase;
             }
 
+            /// <summary>
+            /// Constructs a new instance.
+            /// </summary>
             public StringFragment()
             {
             }
@@ -331,21 +379,47 @@ namespace DistillNET
         /// </summary>
         public class AnchoredAddressFragment : StringFragment
         {
+            /// <summary>
+            /// Gets the request segment to be matched.
+            /// </summary>
             public string Request
             {
                 get;
                 private set;
             } = string.Empty;
 
+            /// <summary>
+            /// Constructs a new instance.
+            /// </summary>
+            /// <param name="request">
+            /// The request segment to match.
+            /// </param>
+            /// <param name="iCase">
+            /// Whether or not matching will ignore case.
+            /// </param>
             public AnchoredAddressFragment(string request, bool iCase) : base(iCase)
             {
                 Request = request;
             }
 
+            /// <summary>
+            /// Constructs a new instance.
+            /// </summary>
             public AnchoredAddressFragment()
             {
             }
 
+            /// <summary>
+            /// Gets whether or not the supplied URI matches this rule segment.
+            /// </summary>
+            /// <param name="source">
+            /// The URI.
+            /// </param>
+            /// <param name="lastPosition">
+            /// The current position in scan.
+            /// </param>
+            /// <returns>
+            /// </returns>
             public override int IsMatch(Uri source, int lastPosition)
             {
                 // Anchored stuff like this always starts at position zero.
@@ -385,21 +459,44 @@ namespace DistillNET
         /// </summary>
         public class AnchoredDomainFragment : UrlFilteringRuleFragment
         {
+            /// <summary>
+            /// Gets the domain that should be matched.
+            /// </summary>
             public string Domain
             {
                 get;
                 private set;
             } = string.Empty;
 
+            /// <summary>
+            /// Constructs a new instance.
+            /// </summary>
+            /// <param name="domain">
+            /// The domain that should be matched.
+            /// </param>
             public AnchoredDomainFragment(string domain)
             {
                 Domain = domain;
             }
 
+            /// <summary>
+            /// Constructs a new instance.
+            /// </summary>
             public AnchoredDomainFragment()
             {
             }
 
+            /// <summary>
+            /// Gets whether or not the supplied URI matches this rule segment.
+            /// </summary>
+            /// <param name="source">
+            /// The URI.
+            /// </param>
+            /// <param name="lastPosition">
+            /// The current position in scan.
+            /// </param>
+            /// <returns>
+            /// </returns>
             public override int IsMatch(Uri source, int lastPosition)
             {
                 if(Domain.Length > source.Host.Length)
@@ -423,21 +520,47 @@ namespace DistillNET
         /// </summary>
         public class StringLiteralFragment : StringFragment
         {
+            /// <summary>
+            /// Gets the value to be matched.
+            /// </summary>
             public string Value
             {
                 get;
                 private set;
             } = string.Empty;
 
+            /// <summary>
+            /// Constructs a new instance.
+            /// </summary>
+            /// <param name="value">
+            /// The value to be matched.
+            /// </param>
+            /// <param name="iCase">
+            /// Whether or not case should be ignored during matching.
+            /// </param>
             public StringLiteralFragment(string value, bool iCase) : base(iCase)
             {
                 Value = value;
             }
 
+            /// <summary>
+            /// Constructs a new instance.
+            /// </summary>
             public StringLiteralFragment()
             {
             }
 
+            /// <summary>
+            /// Gets whether or not the supplied URI matches this rule segment.
+            /// </summary>
+            /// <param name="source">
+            /// The URI.
+            /// </param>
+            /// <param name="lastPosition">
+            /// The current position in scan.
+            /// </param>
+            /// <returns>
+            /// </returns>
             public override int IsMatch(Uri source, int lastPosition)
             {
                 if(lastPosition > source.AbsoluteUri.Length)
@@ -462,7 +585,7 @@ namespace DistillNET
         }
 
         /// <summary>
-        /// Gets a hashset of all referers that this URL filter rule applies to. In the event that
+        /// Gets a list of all referers that this URL filter rule applies to. In the event that
         /// this array is empty, the referer field on requests will not be checked.
         /// </summary>
         public List<string> ApplicableReferers
@@ -472,7 +595,7 @@ namespace DistillNET
         }
 
         /// <summary>
-        /// Gets a hashset of all referers that this URL filter rule applies to. In the event that
+        /// Gets a list of all referers that this URL filter rule applies to. In the event that
         /// this array is empty, the referer field on requests will not be checked.
         /// </summary>
         public List<string> ExceptReferers
@@ -482,7 +605,7 @@ namespace DistillNET
         }
 
         /// <summary>
-        /// Gets a hashset of all domains that this URL filter rule applies to. In the event that
+        /// Gets a list of all domains that this URL filter rule applies to. In the event that
         /// this array is empty, the rule applies globally, to all domains.
         /// </summary>
         public List<string> ApplicableDomains
@@ -492,7 +615,7 @@ namespace DistillNET
         }
 
         /// <summary>
-        /// Gets a hashset of all domains that this URL filter should not be applied to. In the event
+        /// Gets a list of all domains that this URL filter should not be applied to. In the event
         /// that this array is empty, the rule applies either globally, or exclusively to the list of
         /// applicable domains, if that property is not empty.
         /// </summary>
@@ -540,25 +663,31 @@ namespace DistillNET
         /// are meant to be constructed outside of the AbpFormatRuleParser class.
         /// </summary>
         /// <param name="originalRule">
-        /// The original rule string used to build this filter. 
+        /// The original rule string used to build this filter.
         /// </param>
         /// <param name="parts">
-        /// The UrlFilterFragment parts that make up this filter. 
+        /// The UrlFilterFragment parts that make up this filter.
         /// </param>
         /// <param name="options">
-        /// The filter options. 
+        /// The filter options.
         /// </param>
         /// <param name="applicableDomains">
-        /// Domains that the filter should be applied to. 
+        /// Domains that the filter should be applied to.
         /// </param>
         /// <param name="exceptionDomains">
-        /// Domains that the filter should not be applied to. 
+        /// Domains that the filter should not be applied to.
+        /// </param>
+        /// <param name="applicableReferers">
+        /// Referers that the filter rule should be applied to.
+        /// </param>
+        /// <param name="exceptionReferers">
+        /// Referers that the filter rule should not be applied to.
         /// </param>
         /// <param name="isException">
-        /// Whether or not the filter is an exception, that is to say, a whitelisting filter. 
+        /// Whether or not the filter is an exception, that is to say, a whitelisting filter.
         /// </param>
         /// <param name="categoryId">
-        /// The category ID of the category this filter belongs to. 
+        /// The category ID of the category this filter belongs to.
         /// </param>
         internal UrlFilter(string originalRule, List<UrlFilteringRuleFragment> parts, UrlFilterOptions options, List<string> applicableDomains, List<string> exceptionDomains, List<string> applicableReferers, List<string> exceptionReferers, bool isException, short categoryId) : base(originalRule, isException, categoryId)
         {

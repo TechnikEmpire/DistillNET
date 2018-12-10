@@ -10,6 +10,7 @@
 using DistillNET.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DistillNET
 {
@@ -94,6 +95,7 @@ namespace DistillNET
             { "~elemhide", UrlFilter.UrlFilterOptions.ExceptElemHide },
             { "other", UrlFilter.UrlFilterOptions.Other },
             { "~other", UrlFilter.UrlFilterOptions.ExceptOther },
+            #pragma warning disable CS0618 // Type or member is obsolete
             { "media", UrlFilter.UrlFilterOptions.Media },
             { "~media", UrlFilter.UrlFilterOptions.ExceptMedia },
             { "font", UrlFilter.UrlFilterOptions.Font },
@@ -105,6 +107,7 @@ namespace DistillNET
             { "generichide", UrlFilter.UrlFilterOptions.GenericHide },
             { "genericblock", UrlFilter.UrlFilterOptions.GenericBlock },
             { "ping", UrlFilter.UrlFilterOptions.Ping }
+            #pragma warning restore CS0618 // Type or member is obsolete
         };
 
         /// <summary>
@@ -114,8 +117,13 @@ namespace DistillNET
         private static readonly char[] s_anchoredEndIndicators = new[] { '/', ':', '?', '=', '&', '*', '^' };
 
         /// <summary>
+        /// Constructs a new instance.
         /// </summary>
         /// <param name="rule">
+        /// The rule string.
+        /// </param>
+        /// <param name="categoryId">
+        /// The category ID to assign to this rule.
         /// </param>
         /// <returns>
         /// </returns>
@@ -169,7 +177,7 @@ namespace DistillNET
                 {
                     return ParseCssSelector(rule, cssSelectorStart, isException, categoryId);
                 }
-                catch(ArgumentOutOfRangeException e)
+                catch (ArgumentOutOfRangeException)
                 {
                     throw new ArgumentException("Out of range exception while parsing CSS selector rule. Rule must be malformed.", nameof(rule));
                 }
@@ -179,7 +187,7 @@ namespace DistillNET
             {   
                 return ParseUrlFilter(rule, optionsStart, hasOptions, isException, categoryId);
             }
-            catch(ArgumentOutOfRangeException e)
+            catch (ArgumentOutOfRangeException)
             {
                 throw new ArgumentException("Out of range exception while parsing filter rule. Rule must be malformed.", nameof(rule));
             }
@@ -198,6 +206,9 @@ namespace DistillNET
         /// Whether or not this rule is an exception rule. It is obviously assumed that this has been
         /// predetermined externally and this will not be determined internally.
         /// </param>
+        /// <param name="categoryId">
+        /// The category ID to assign to this rule.
+        /// </param>
         /// <returns>
         /// A css selector filtering class instance built from the parsed rule.
         /// </returns>
@@ -205,7 +216,7 @@ namespace DistillNET
         {
             var originalRuleCopy = rule;
 
-            string[] applicableDomains = null;
+            List<string> applicableDomains = null;
 
             if(selectorStartOffset > 0)
             {
@@ -213,7 +224,7 @@ namespace DistillNET
                 // indicates that it's a domain-specific CSS selector rule. As such, one or more
                 // domains, separated by a comma character, will preceed the actual CSS selector
                 // rule.
-                applicableDomains = rule.Substring(0, selectorStartOffset).Split(s_optionsDelim, StringSplitOptions.None);
+                applicableDomains = rule.Substring(0, selectorStartOffset).Split(s_optionsDelim, StringSplitOptions.None).ToList();
             }
 
             // If it's an exception, we need to cut off three characters from the start of the CSS

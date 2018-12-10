@@ -6,21 +6,56 @@
  */
 
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace DistillNET
 {
+    /// <summary>
+    /// The HtmlFilter is a class that represents a CSS selector that can be removed or whitelisted
+    /// in source HTML.
+    /// </summary>
     public class HtmlFilter : Filter
     {
         /// <summary>
-        /// Gets an array of all domains that this CSS selector rule applies to. In the event that
-        /// this array is empty, the rule applies globally, to all domains.
+        /// Gets a list of all referers that this HTML filter rule applies to. In the event that this
+        /// array is empty, the referer field on requests will not be checked.
         /// </summary>
-        public string[] ApplicableDomains
+        public List<string> ApplicableReferers
         {
             get;
             private set;
-        } = new string[0];
+        }
+
+        /// <summary>
+        /// Gets a list of all referers that this HTML filter rule applies to. In the event that this
+        /// array is empty, the referer field on requests will not be checked.
+        /// </summary>
+        public List<string> ExceptReferers
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets a list of all domains that this HTML filter rule applies to. In the event that this
+        /// array is empty, the rule applies globally, to all domains.
+        /// </summary>
+        public List<string> ApplicableDomains
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets a list of all domains that this HTML filter should not be applied to. In the event
+        /// that this array is empty, the rule applies either globally, or exclusively to the list of
+        /// applicable domains, if that property is not empty.
+        /// </summary>
+        public List<string> ExceptionDomains
+        {
+            get;
+            private set;
+        }
 
         /// <summary>
         /// Gets the raw CSS selector rule string.
@@ -49,14 +84,17 @@ namespace DistillNET
         /// Whether or not this CSS selector rule is an exception. Exception rules protect matching
         /// content from being filtered out.
         /// </param>
+        /// <param name="categoryId">
+        /// The category ID to assign to this rule.
+        /// </param>
         /// <exception cref="ArgumentException">
         /// If compiled with TE_FILTERING_VERIFY_RULE_DATA, the cssSelector parameter will undergo
         /// checks to ensure that it is not null, empty or whitespace. If these checks are performed
         /// and any of those conditions is true, the constructor will throw this exception.
         /// </exception>
-        internal HtmlFilter(string originalRule, string[] applicableDomains, string cssSelector, bool isException, short categoryId) : base(originalRule, isException, categoryId)
+        internal HtmlFilter(string originalRule, List<string> applicableDomains, string cssSelector, bool isException, short categoryId) : base(originalRule, isException, categoryId)
         {
-            if(applicableDomains != null && applicableDomains.Length > 0)
+            if (applicableDomains != null && applicableDomains.Count > 0)
             {
                 ApplicableDomains = applicableDomains;
             }
@@ -72,13 +110,13 @@ namespace DistillNET
             CssSelector = cssSelector;
         }
 
+        /// <summary>
+        /// Removes verbose data from the constructed instance.
+        /// </summary>
         public override void TrimExcessData()
         {
-            if(this.ApplicableDomains != null)
-            {
-                Array.Clear(this.ApplicableDomains, 0, this.ApplicableDomains.Length);
-                this.ApplicableDomains = new string[0];
-            }
+            ApplicableDomains.Clear();
+            ExceptionDomains.Clear();
 
             OriginalRule = string.Empty;
         }

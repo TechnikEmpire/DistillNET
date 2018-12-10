@@ -550,14 +550,15 @@ namespace DistillNET
             return retVal;
         }
 
-        public IEnumerable<Filter> GetFiltersForRequest(Uri requestString, string referer = "")
-        {
-            return null;
-        }
-
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
+        /// <summary>
+        /// Disposes the object.
+        /// </summary>
+        /// <param name="disposing">
+        /// Disposing val.
+        /// </param>
         protected virtual void Dispose(bool disposing)
         {
             if(!disposedValue)
@@ -585,6 +586,9 @@ namespace DistillNET
         // }
 
         // This code added to correctly implement the disposable pattern.
+        /// <summary>
+        /// Disposes the object.
+        /// </summary>
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
