@@ -1,5 +1,5 @@
 # DistillNET
-DistillNET is a library for matching and filtering HTTP requests and HTML response content using the Adblock Plus Filter format. Note that while the CSS selector rule parser and object are complete, they are not implemented in anything, because an HTML parser backend is needed. This is a future goal.
+DistillNET is a library for matching and filtering HTTP requests using the Adblock Plus Filter format. Note that while the CSS selector rule parser and objects are complete, they are not implemented in anything, because an HTML parser backend is needed. This is a future goal.
 
 DistillNET is available on [Nuget](https://www.nuget.org/packages/DistillNET/).
 
