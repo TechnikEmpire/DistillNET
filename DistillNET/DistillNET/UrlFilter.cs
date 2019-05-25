@@ -762,6 +762,17 @@ namespace DistillNET
                             thirdPartyBits &= ~(long)UrlFilterOptions.ThirdParty;
                         }
 
+
+                        if (ApplicableDomains.Count > 0 && !ApplicableDomains.Contains(hostWithoutWww))
+                        {
+                            return false;
+                        }
+
+                        if (ExceptionDomains.Count > 0 && ExceptionDomains.Contains(hostWithoutWww))
+                        {
+                            return false;
+                        }
+
                         // While we have the referer field, let's go ahead and check if we have
                         // referer options and if we do or don't have a match.
                         //
@@ -862,6 +873,26 @@ namespace DistillNET
                 }
             }
 
+            if (ApplicableDomains.Count > 0 || ExceptionDomains.Count > 0)
+            {
+                string hostWithoutWww = uri.Host;
+
+                if (hostWithoutWww.StartsWithQuick("www."))
+                {
+                    hostWithoutWww = hostWithoutWww.Substring(4);
+                }
+
+                if (ApplicableDomains.Count > 0 && !ApplicableDomains.Contains(hostWithoutWww))
+                {
+                    return false;
+                }
+
+                if (ExceptionDomains.Count > 0 && ExceptionDomains.Contains(hostWithoutWww))
+                {
+                    return false;
+                }
+            }
+
             int matchIndex = 0;
             foreach(var part in Parts)
             {
@@ -882,9 +913,6 @@ namespace DistillNET
         /// </summary>
         public override void TrimExcessData()
         {
-            ApplicableDomains.Clear();
-            ExceptionDomains.Clear();
-
             OriginalRule = string.Empty;
         }
     }

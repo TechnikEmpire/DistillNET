@@ -55,6 +55,29 @@ namespace DistillNET
             Console.ReadKey();
         }
 
+        private static void TestForBug20()
+        {
+            var col = new FilterDbCollection();
+
+            col.ParseStoreRules(new[] { "%3D$popup,domain=nme.com" }, 1);
+            col.FinalizeForRead();
+
+            var uri = new Uri("https://vsco.co/goodvibes-vsco/media/5c2fb09c8e529d3e52b4231b?share=MTU0NjYyOTI4MA%3D%3D");
+
+            var allRules = col.GetFiltersForDomain("nme.com");
+
+            var nvm = new NameValueCollection();
+
+            var len = allRules.Count();
+
+            foreach (var wlr in allRules)
+            {
+                Debug.Assert(wlr.IsMatch(uri, nvm) == false);
+            }
+
+            Console.ReadKey();
+        }
+
         private static void Main(string[] args)
         {
             var parser = new AbpFormatRuleParser();
