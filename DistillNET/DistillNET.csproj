@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -8,15 +8,14 @@
     <PackageProjectUrl>https://github.com/TechnikEmpire/DistillNET</PackageProjectUrl>
     <RepositoryUrl>https://github.com/TechnikEmpire/DistillNET</RepositoryUrl>
     <Description>DistillNET is a library for matching and filtering HTTP requests URLs using the Adblock Plus Filter format.</Description>
-    <Copyright>Copyright © 2017 - 2018 Jesse Nicholson</Copyright>
-    <Version>1.6.4</Version>
+    <Copyright>Copyright © 2017 - 2019 Jesse Nicholson</Copyright>
+    <Version>1.6.5</Version>
     <Authors>Jesse Nicholson</Authors>
     <Company>Technik Empire</Company>
     <PackageTags>DistillNET Adblock AdblockPlus Adblock-Plus URL-Filter URL-Filtering Content-Filter Filter</PackageTags>
-    <PackageReleaseNotes>Upgrades dependencies to latest version.
-Fixes a bug where domain option was entirely dropped from previous release!</PackageReleaseNotes>
-    <AssemblyVersion>1.6.4.0</AssemblyVersion>
-    <FileVersion>1.6.4.0</FileVersion>
+    <PackageReleaseNotes>Upgrades dependencies to latest version.</PackageReleaseNotes>
+    <AssemblyVersion>1.6.5.0</AssemblyVersion>
+    <FileVersion>1.6.5.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -28,7 +27,7 @@ Fixes a bug where domain option was entirely dropped from previous release!</Pac
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SQLite" Version="2.2.4" />
+    <PackageReference Include="Microsoft.Data.SQLite" Version="2.2.6" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
   </ItemGroup>
 
